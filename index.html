@@ -29,21 +29,20 @@
       text-shadow: 0 1px 8px rgba(0,0,0,.6);
     }
     .intro-actions { position: absolute; right: 18px; bottom: 16px; display: flex; gap: 8px; }
-    #intro-skip, #intro-sound {
+    #intro-skip {
       background: rgba(13,18,28,.55); border: 1px solid rgba(139,92,246,.45); color: #e8eef7;
       font-size: .74rem; font-weight: 600; padding: 8px 16px; border-radius: 999px;
       cursor: pointer; backdrop-filter: blur(6px); transition: all .25s ease;
     }
-    #intro-skip:hover, #intro-sound:hover { background: rgba(139,92,246,.35); border-color: #8b5cf6; }
+    #intro-skip:hover { background: rgba(139,92,246,.35); border-color: #8b5cf6; }
   </style>
 </head>
 <body>
   <div id="intro-overlay" aria-hidden="true">
-    <video id="intro-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" onerror="window.__introDismiss&&window.__introDismiss()"></video>
+    <video id="intro-video" src="assets/intro.mp4" autoplay playsinline preload="auto" onerror="window.__introDismiss&&window.__introDismiss()"></video>
     <div class="intro-vignette"></div>
     <span class="intro-brand">🛠️ ToolBox</span>
     <div class="intro-actions">
-      <button id="intro-sound" type="button" onclick="window.__introToggleSound&&window.__introToggleSound()">🔇 Sound</button>
       <button id="intro-skip" type="button" onclick="window.__introDismiss&&window.__introDismiss()">Skip intro ⏭</button>
     </div>
   </div>
@@ -60,14 +59,6 @@
       if (v) v.pause();
       setTimeout(function () { o.classList.add('gone'); }, 900);
     };
-    window.__introToggleSound = function () {
-      var v = document.getElementById('intro-video');
-      if (!v) return;
-      v.muted = !v.muted;
-      var b = document.getElementById('intro-sound');
-      if (b) b.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
-      try { localStorage.setItem('tb_intro_sound', v.muted ? 'off' : 'on'); } catch (e) {}
-    };
   </script>
   <header id="site-header" class="sticky top-0 z-50 border-b border-day-200/70 bg-day-50/80 backdrop-blur-md transition-colors duration-300 dark:border-night-600/60 dark:bg-night-950/80"></header>
   <main id="page" data-route="home"></main>
@@ -79,8 +70,6 @@
       var ov = document.getElementById('intro-overlay');
       if (!ov) return;
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var soundPref = null;
-      try { soundPref = localStorage.getItem('tb_intro_sound'); } catch (e) {}
       function finish() {
         if (ov.dataset.done) return;
         ov.dataset.done = '1';
@@ -101,21 +90,14 @@
         v.src = 'assets/intro.mp4';
         v.load();
         v.currentTime = 0;
-        /* replay is user-triggered: sound unless they explicitly chose 'off'; first ever replay counts as their choice.
-           read the live stored value so an in-session toggle always wins */
-        var livePref = null;
-        try { livePref = localStorage.getItem('tb_intro_sound'); } catch (e) {}
-        if (livePref === null) { livePref = 'on'; try { localStorage.setItem('tb_intro_sound', 'on'); } catch (e) {} }
-        v.muted = livePref === 'off';
-        var sb = document.getElementById('intro-sound');
-        if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
+        /* replay is a user gesture, so sound is always allowed */
+        v.muted = false;
         var p = v.play();
-        if (p && p.then) p.then(ensureSoundPref).catch(function () {
-          /* same muted-retry as autoplay, for safety */
+        if (p && p.catch) p.catch(function () {
+          /* safety: if playback is refused, retry muted once */
           v.muted = true;
-          if (sb) sb.textContent = '🔇 Sound';
           var p2 = v.play();
-          if (p2 && p2.then) p2.then(ensureSoundPref).catch(function () {});
+          if (p2 && p2.catch) p2.catch(function () {});
         });
       };
 
@@ -128,23 +110,9 @@
       }
       document.body.classList.add('intro-lock');
       var v = document.getElementById('intro-video');
-      /* respect saved sound preference (autoplay-with-sound is allowed once the user has interacted with the domain) */
-      v.muted = soundPref !== 'on';
-      var sb = document.getElementById('intro-sound');
-      if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
-      /* once playback is running, restore the user's saved sound choice (they've interacted with this
-         site, so the browser should honor unmuting) */
-      function ensureSoundPref() {
-        if (v.muted) {
-          var pref = 'on';
-          try { pref = localStorage.getItem('tb_intro_sound') || 'on'; } catch (e) {}
-          if (pref === 'on') {
-            v.muted = false;
-            var b = document.getElementById('intro-sound');
-            if (b) b.textContent = '🔊 Sound';
-          }
-        }
-      }
+      /* the intro always plays with audio — the browser only allows that once the user has interacted
+         with the site, so on a truly fresh profile it may fall back to muted via the retry below */
+      v.muted = false;
       var started = false;
       function markStarted() { started = true; }
       v.addEventListener('playing', markStarted);
@@ -153,13 +121,11 @@
       v.addEventListener('error', function () { finish(); });
       function tryPlay(mutedRetry) {
         var p = v.play();
-        if (p && p.then) p.then(ensureSoundPref).catch(function () {
+        if (p && p.catch) p.catch(function () {
           /* autoplay blocked — usually because sound was requested before any interaction on this browser.
              Retry muted once; only give up if even muted playback is refused. */
           if (!mutedRetry) {
             v.muted = true;
-            var sb3 = document.getElementById('intro-sound');
-            if (sb3) sb3.textContent = '🔇 Sound';
             tryPlay(true);
           } else {
             finish();
