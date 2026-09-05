@@ -189,10 +189,10 @@
   function headerHtml(active) {
     var b = base();
     return '<div class="mx-auto flex w-[min(1100px,92%)] flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3.5">'
-      + '<a href="' + b + 'index.html" class="group flex items-center gap-2 text-xl font-extrabold tracking-tight text-day-900 no-underline transition-transform duration-300 hover:-translate-y-0.5 dark:text-night-200">'
-      + '<span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cobalt-400 to-cobalt-700 text-lg shadow-glow transition-transform duration-300 group-hover:scale-110">🛠️</span>'
+      + '<a href="' + b + 'index.html" class="group flex items-center gap-2 text-lg font-extrabold tracking-tight text-day-900 no-underline transition-transform duration-300 hover:-translate-y-0.5 sm:text-xl dark:text-night-200">'
+      + '<span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-cobalt-400 to-cobalt-700 text-base shadow-glow transition-transform duration-300 group-hover:scale-110 sm:h-9 sm:w-9 sm:text-lg">🛠️</span>'
       + "Tool<span class=\"cobalt-grad\">Box</span></a>"
-      + '<nav class="flex flex-wrap items-center gap-1">' + navHtml(active) + "</nav>"
+      + '<nav class="nav-scroll min-w-0 flex-1 flex flex-nowrap items-center gap-1 overflow-x-auto sm:flex-none sm:flex-wrap">' + navHtml(active) + "</nav>"
       + '<button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">🌙</button>'
       + "</div>";
   }
@@ -230,11 +230,11 @@
   /* ================= Pages ================= */
   function renderHome(page) {
     page.innerHTML =
-      '<section class="hero px-0 pb-10 pt-16 text-center">'
+      '<section class="hero px-0 pb-10 pt-12 text-center sm:pt-16">'
       + '<div class="animate-fade-up">'
       + '<h1 class="text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl lg:text-6xl">Free tools for <span class="cobalt-grad animate-grad-shift bg-[length:200%]">everyday tasks</span></h1>'
-      + '<p class="mx-auto mt-4 max-w-[600px] text-lg text-day-500 dark:text-night-400">Whether you&#39;re drafting an essay, resizing a photo, or settling a debate with a coin flip — every tool here runs right in your browser. No sign-ups, no ads, and nothing you make ever leaves your device.</p>'
-      + '<div class="gooey-search relative mx-auto mt-8 max-w-[560px] animate-fade-up [animation-delay:180ms]">'
+      + '<p class="mx-auto mt-3 max-w-[600px] text-base text-day-500 sm:mt-4 sm:text-lg dark:text-night-400">Whether you&#39;re drafting an essay, resizing a photo, or settling a debate with a coin flip — every tool here runs right in your browser. No sign-ups, no ads, and nothing you make ever leaves your device.</p>'
+      + '<div class="gooey-search relative mx-auto mt-6 max-w-[560px] animate-fade-up [animation-delay:180ms] sm:mt-8">'
       + '<div class="gooey-bg" aria-hidden="true"><span class="gooey-orb gooey-orb-1"></span><span class="gooey-orb gooey-orb-2"></span></div>'
       + '<span class="gooey-follow" aria-hidden="true"></span>'
       + '<span class="pointer-events-none absolute left-5 top-1/2 z-20 -translate-y-1/2 text-lg opacity-70">🔍</span>'
@@ -310,7 +310,7 @@
     page.innerHTML =
       '<section class="mx-auto w-[min(1100px,92%)] px-0 pt-12">'
       + '<p class="mb-2 text-sm text-day-500 dark:text-night-400"><a class="font-semibold transition-colors hover:text-cobalt-600 dark:text-night-400 dark:hover:text-cobalt-300" href="' + b + 'index.html">Home</a> <span class="opacity-50">/</span> <span class="text-day-900 dark:text-night-200">' + esc(c.name) + "</span></p>"
-      + '<h1 class="text-4xl font-extrabold tracking-tight text-day-900 dark:text-night-200">' + c.emoji + " " + esc(c.name) + " tools</h1>"
+      + '<h1 class="text-3xl font-extrabold tracking-tight text-day-900 sm:text-4xl dark:text-night-200">' + c.emoji + " " + esc(c.name) + " tools</h1>"
       + '<p class="mb-5 mt-1 max-w-[640px] text-day-500 dark:text-night-400">' + esc(c.desc) + "</p>"
       + '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">' + tools.map(toolCard).join("") + "</div>"
       + (planned.length
