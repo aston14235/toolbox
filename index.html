@@ -39,11 +39,23 @@
 </head>
 <body>
   <div id="intro-overlay" aria-hidden="true">
-    <video id="intro-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto"></video>
+    <video id="intro-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" onerror="window.__introDismiss&&window.__introDismiss()"></video>
     <div class="intro-vignette"></div>
     <span class="intro-brand">🛠️ ToolBox</span>
-    <button id="intro-skip" type="button">Skip intro ⏭</button>
+    <button id="intro-skip" type="button" onclick="window.__introDismiss&&window.__introDismiss()">Skip intro ⏭</button>
   </div>
+  <script>
+    /* fail-safe dismiss — defined first so skip/error always work, even if the main script fails */
+    window.__introDismiss = function () {
+      var o = document.getElementById('intro-overlay');
+      if (!o || o.dataset.done) return;
+      o.dataset.done = '1';
+      o.classList.add('hide');
+      document.body.classList.remove('intro-lock');
+      try { sessionStorage.setItem('tb_intro_seen', '1'); } catch (e) {}
+      setTimeout(function () { o.classList.add('gone'); }, 900);
+    };
+  </script>
   <header id="site-header" class="sticky top-0 z-50 border-b border-day-200/70 bg-day-50/80 backdrop-blur-md transition-colors duration-300 dark:border-night-600/60 dark:bg-night-950/80"></header>
   <main id="page" data-route="home"></main>
   <footer id="site-footer"></footer>
@@ -71,7 +83,9 @@
         ov.dataset.done = '';
         document.body.classList.add('intro-lock');
         var v = document.getElementById('intro-video');
-        if (!v.getAttribute('src')) v.src = 'assets/intro.mp4'; /* restore if the skip branch cleared it */
+        /* force a clean reload — handles the case where the element is stuck in an error state */
+        v.src = 'assets/intro.mp4';
+        v.load();
         v.currentTime = 0;
         var p = v.play();
         if (p && p.catch) p.catch(function () {});
@@ -92,8 +106,9 @@
       v.addEventListener('error', function () { finish(); });
       var p = v.play();
       if (p && p.catch) p.catch(function () { finish(); });
-      /* safety net: never leave the site stuck behind a dead video */
+      /* safety nets: never leave the site stuck behind a dead video */
       setTimeout(function () { if (!started) finish(); }, 3500);
+      setTimeout(function () { if (!ov.dataset.done) finish(); }, 15000); /* hard cap, video is 10s */
       document.getElementById('intro-skip').addEventListener('click', finish);
     })();
   </script>
