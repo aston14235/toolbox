@@ -623,6 +623,7 @@ table.data tr:last-child td { border-bottom: none; }
 /* ASCII art */
 .ascii-out {
   white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 10px;
   line-height: 1.1;
   overflow: auto;

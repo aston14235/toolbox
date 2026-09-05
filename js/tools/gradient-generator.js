@@ -28,7 +28,10 @@ ToolBox.define("gradient-generator", {
       var css = t === "linear"
         ? "background: linear-gradient(" + a + "deg, " + c1 + ", " + c2 + ");"
         : "background: radial-gradient(circle, " + c1 + ", " + c2 + ");";
-      preview.style.background = css;
+      // preview needs the raw gradient value, not the full CSS declaration
+      preview.style.background = t === "linear"
+        ? "linear-gradient(" + a + "deg, " + c1 + ", " + c2 + ")"
+        : "radial-gradient(circle, " + c1 + ", " + c2 + ")";
       cssEl.value = css;
     }
     ["#type", "#c1", "#c2", "#angle"].forEach(function (id) {

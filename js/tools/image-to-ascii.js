@@ -16,7 +16,9 @@ ToolBox.define("image-to-ascii", {
       + '<div class="controls" style="margin-top:4px;">'
       + '<label>Dither <input type="checkbox" id="dither" checked></label>'
       + '<label>Invert <input type="checkbox" id="invert"></label>'
+      + '<button id="auto" class="btn ghost">✨ Auto-optimize</button>'
       + "</div>"
+      + '<p id="auto-note" class="muted small" style="margin-top:6px;"></p>'
       + '<div class="ascii-out" id="out" aria-label="ASCII art output"></div>'
       + '<div class="controls" style="margin-top:14px;"><button id="copy" class="btn primary">📋 Copy ASCII</button></div>'
       + "</div></div>";
@@ -33,6 +35,97 @@ ToolBox.define("image-to-ascii", {
       fine: " .,:;irsXA253hMHGS#9B&@",
       blocky: " ░▒▓█"
     };
+    var STYLE_NAME = { classic: "Classic", fine: "Fine", blocky: "Blocky" };
+
+    /* Analyze the image: aspect, resolution, and tonal statistics (mean/stddev/tones)
+       computed on a small downscaled sample with the same auto-level stretch convert() uses. */
+    function analyze(img) {
+      var sw = 160;
+      var aspect = img.naturalHeight / img.naturalWidth;
+      var sh = Math.max(1, Math.round(sw * aspect));
+      var c = document.createElement("canvas");
+      c.width = sw;
+      c.height = sh;
+      var ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0, sw, sh);
+      var d = ctx.getImageData(0, 0, sw, sh).data;
+      var n = sw * sh;
+      var gray = new Float32Array(n);
+      for (var i = 0; i < n; i++) {
+        var p = i * 4;
+        var a = d[p + 3] / 255;
+        var r = d[p] * a + 255 * (1 - a);
+        var g = d[p + 1] * a + 255 * (1 - a);
+        var b = d[p + 2] * a + 255 * (1 - a);
+        gray[i] = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+      // same auto-levels stretch as convert()
+      var mn = 255, mx = 0;
+      for (var j = 0; j < n; j++) {
+        if (gray[j] < mn) mn = gray[j];
+        if (gray[j] > mx) mx = gray[j];
+      }
+      if (mx - mn > 8) {
+        var span = mx - mn;
+        for (var k = 0; k < n; k++) gray[k] = (gray[k] - mn) / span * 255;
+      }
+      var mean = 0;
+      for (var m = 0; m < n; m++) mean += gray[m];
+      mean /= n;
+      var varr = 0;
+      var counts = {};
+      for (var q = 0; q < n; q++) {
+        varr += (gray[q] - mean) * (gray[q] - mean);
+        var bucket = Math.round(gray[q] / 8);
+        counts[bucket] = (counts[bucket] || 0) + 1;
+      }
+      var sigma = Math.sqrt(varr / n);
+      // ignore negligible buckets (anti-aliased edges on flat art) so line art
+      // doesn't count as a continuous-tone photo
+      var minShare = n * 0.0025;
+      var tones = 0;
+      for (var b in counts) if (counts[b] >= minShare) tones++;
+      return { aspect: aspect, longest: Math.max(img.naturalWidth, img.naturalHeight), mean: mean, sigma: sigma, tones: tones };
+    }
+
+    /* Pick the best settings for the loaded image and apply them.
+       Conservative on purpose: auto-levels already stretches + centers the tones,
+       so contrast/brightness stay neutral — only width and style adapt to the image. */
+    function autoTune() {
+      if (!lastImg) return;
+      var a = analyze(lastImg);
+
+      // style: flat line art → Classic (clean edges), everything tonal → Fine (most levels)
+      var style = a.tones <= 5 ? "classic" : "fine";
+      box.querySelector("#style").value = style;
+
+      // width: modest and aspect-aware (characters are ~2x taller than wide).
+      // never the 200+ wall of text — that's unreadable on any screen.
+      var aspect = a.aspect; // h/w
+      var w;
+      if (aspect <= 0.6) w = 140;         // wide landscape
+      else if (aspect <= 0.9) w = 125;
+      else if (aspect <= 1.25) w = 110;   // roughly square
+      else w = 90;                        // portrait
+      w = Math.max(40, Math.min(160, w, lastImg.naturalWidth || 160));
+      widthEl.value = w;
+      box.querySelector("#width-label").textContent = w;
+
+      // tonal balance stays neutral — the auto-level stretch in convert() handles it
+      box.querySelector("#contrast").value = 100;
+      box.querySelector("#contrast-label").textContent = "100%";
+      box.querySelector("#brightness").value = 0;
+      box.querySelector("#brightness-label").textContent = "0";
+
+      // dither only helps images with continuous tones — keep flat art clean
+      box.querySelector("#dither").checked = a.tones >= 6;
+
+      box.querySelector("#auto-note").textContent = "✨ Auto-optimized: " + STYLE_NAME[style]
+        + " · " + w + " chars wide"
+        + (a.tones >= 6 ? " · dither on" : " · dither off")
+        + " — tweak any control to override.";
+      convert();
+    }
 
     function convert() {
       if (!lastImg) return;
@@ -87,7 +180,8 @@ ToolBox.define("image-to-ascii", {
         for (var x = 0; x < w; x++) {
           var idx = y * w + x;
           var v = Math.max(0, Math.min(255, gray[idx] + (err ? err[idx] : 0)));
-          var ci = Math.round((v / 255) * (L - 1));
+          // bright pixel → low ramp index (light char); dark pixel → high index (dark char)
+          var ci = L - 1 - Math.round((v / 255) * (L - 1));
           if (invert) ci = L - 1 - ci;
           if (ci < 0) ci = 0;
           if (ci >= L) ci = L - 1;
@@ -141,6 +235,7 @@ ToolBox.define("image-to-ascii", {
     box.querySelector("#brightness").addEventListener("input", function () {
       box.querySelector("#brightness-label").textContent = box.querySelector("#brightness").value;
     });
+    box.querySelector("#auto").addEventListener("click", autoTune);
     box.querySelector("#copy").addEventListener("click", function () {
       var txt = outEl.textContent;
       if (!txt) return;
@@ -161,7 +256,7 @@ ToolBox.define("image-to-ascii", {
       img.onload = function () {
         lastImg = img;
         controls.classList.remove("hidden");
-        convert();
+        autoTune();
       };
       img.src = lastUrl;
     }

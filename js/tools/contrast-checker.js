@@ -29,10 +29,10 @@ ToolBox.define("contrast-checker", {
       var hi = Math.max(l1, l2), lo = Math.min(l1, l2);
       return ((hi + 0.05) / (lo + 0.05)).toFixed(2);
     }
-    function badge(r) {
-      var ok = Number(r) >= 4.5, largeOk = Number(r) >= 3;
-      return '<span class="badge" style="background:' + (ok ? "rgba(34,197,94,0.18)" : "rgba(239,68,68,0.18)") + ';color:' + (ok ? "var(--ok)" : "var(--danger)") + ';">' + (ok ? "✅ AA" : "❌ AA") + "</span> "
-        + '<span class="badge" style="background:' + (largeOk ? "rgba(34,197,94,0.18)" : "rgba(239,68,68,0.18)") + ';color:' + (largeOk ? "var(--ok)" : "var(--danger)") + ';">' + (largeOk ? "✅ AAA" : "❌ AAA") + "</span>";
+    function badge(r, aaMin, aaaMin) {
+      var aa = Number(r) >= aaMin, aaa = Number(r) >= aaaMin;
+      return '<span class="badge" style="background:' + (aa ? "rgba(34,197,94,0.18)" : "rgba(239,68,68,0.18)") + ';color:' + (aa ? "var(--ok)" : "var(--danger)") + ';">' + (aa ? "✅ AA" : "❌ AA") + "</span> "
+        + '<span class="badge" style="background:' + (aaa ? "rgba(34,197,94,0.18)" : "rgba(239,68,68,0.18)") + ';color:' + (aaa ? "var(--ok)" : "var(--danger)") + ';">' + (aaa ? "✅ AAA" : "❌ AAA") + "</span>";
     }
 
     function update() {
@@ -43,10 +43,9 @@ ToolBox.define("contrast-checker", {
       sample.style.background = bg;
       var r = ratio(fg, bg);
       box.querySelector("#ratio").textContent = r + ":1";
-      box.querySelector("#normal").innerHTML = badge(r);
-      var rl = Number(r) >= 3;
-      box.querySelector("#large").innerHTML = '<span class="badge" style="background:' + (rl ? "rgba(34,197,94,0.18)" : "rgba(239,68,68,0.18)") + ';color:' + (rl ? "var(--ok)" : "var(--danger)") + ';">' + (rl ? "✅ Pass" : "❌ Fail") + "</span>";
-      box.querySelector("#ui").innerHTML = '<span class="badge" style="background:' + (rl ? "rgba(34,197,94,0.18)" : "rgba(239,68,68,0.18)") + ';color:' + (rl ? "var(--ok)" : "var(--danger)") + ';">' + (rl ? "✅ Pass" : "❌ Fail") + "</span>";
+      box.querySelector("#normal").innerHTML = badge(r, 4.5, 7);
+      box.querySelector("#large").innerHTML = badge(r, 3, 4.5);
+      box.querySelector("#ui").innerHTML = badge(r, 3, 4.5);
     }
     box.querySelector("#fg").addEventListener("input", update);
     box.querySelector("#bg").addEventListener("input", update);

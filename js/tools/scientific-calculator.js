@@ -31,7 +31,11 @@ ToolBox.define("scientific-calculator", {
     }
 
     function evaluate(showFull) {
-      var t = expr
+      // auto-close any unbalanced parens (e.g. "sin(45" pressed with =)
+      var openP = (expr.match(/\(/g) || []).length;
+      var closeP = (expr.match(/\)/g) || []).length;
+      var autoClose = openP > closeP ? ")".repeat(openP - closeP) : "";
+      var t = (expr + autoClose)
         .replace(/÷/g, "/").replace(/×/g, "*").replace(/−/g, "-")
         .replace(/π/g, "(Math.PI)").replace(/e/g, "(Math.E)")
         .replace(/\^/g, "**").replace(/sqrt\(/g, "Math.sqrt(")
@@ -60,17 +64,21 @@ ToolBox.define("scientific-calculator", {
       if (k === "=") { evaluate(true); justEvaluated = true; return; }
       if (justEvaluated && /[0-9.]/.test(k)) { expr = ""; justEvaluated = false; }
       if (justEvaluated) justEvaluated = false;
-      if (k === "x²") { expr = "(" + expr + ")^2"; }
-      else if (k === "√") { expr = "sqrt(" + expr + ")"; }
-      else if (k === "1/x") { expr = "1/(" + expr + ")"; }
-      else if (k === "sin") { expr = "sin(" + expr + ")"; }
-      else if (k === "cos") { expr = "cos(" + expr + ")"; }
-      else if (k === "tan") { expr = "tan(" + expr + ")"; }
-      else if (k === "ln") { expr = "ln(" + expr + ")"; }
-      else if (k === "log") { expr = "log(" + expr + ")"; }
-      else if (k === "xʸ") { expr = "(" + expr + ")^"; }
-      else if (k === "%") { expr = "(" + expr + ")/100"; }
-      else if (k === "±") { expr = "(-(" + expr + "))"; }
+      // unary functions open a paren when nothing is entered yet (sin → type 0 → =)
+      // postfix ops (x², xʸ, %, ±) start from 0 instead of producing "()"
+      var base = expr === "" ? "0" : expr;
+      var open = expr === "";
+      if (k === "x²") { expr = "(" + base + ")^2"; }
+      else if (k === "√") { expr = open ? "sqrt(" : "sqrt(" + expr + ")"; }
+      else if (k === "1/x") { expr = open ? "1/(" : "1/(" + expr + ")"; }
+      else if (k === "sin") { expr = open ? "sin(" : "sin(" + expr + ")"; }
+      else if (k === "cos") { expr = open ? "cos(" : "cos(" + expr + ")"; }
+      else if (k === "tan") { expr = open ? "tan(" : "tan(" + expr + ")"; }
+      else if (k === "ln") { expr = open ? "ln(" : "ln(" + expr + ")"; }
+      else if (k === "log") { expr = open ? "log(" : "log(" + expr + ")"; }
+      else if (k === "xʸ") { expr = "(" + base + ")^"; }
+      else if (k === "%") { expr = "(" + base + ")/100"; }
+      else if (k === "±") { expr = "(-(" + base + "))"; }
       else if (k === "π") { expr += "π"; }
       else if (k === ".") {
         var lastNum = expr.split(/[^0-9]/).pop() || "0";

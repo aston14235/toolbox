@@ -24,6 +24,7 @@ ToolBox.define("text-file-splitter", {
     var statusEl = box.querySelector("#status");
     var partsEl = box.querySelector("#parts");
     var fileName = "";
+    var currentFile = null;
     var parts = [];
 
     box.querySelector("#mode").addEventListener("change", function () {
@@ -51,9 +52,9 @@ ToolBox.define("text-file-splitter", {
       }
     }
     function split() {
-      if (!fileName) return;
+      if (!currentFile) return;
       statusEl.textContent = "Splitting " + fileName + "…";
-      fileInput.files[0].text().then(function (text) {
+      currentFile.text().then(function (text) {
         splitText(text);
         statusEl.textContent = "Split " + fileName + " into " + parts.length + " part" + (parts.length === 1 ? "" : "s") + ".";
         partsEl.innerHTML = parts.map(function (p, i) {
@@ -86,11 +87,11 @@ ToolBox.define("text-file-splitter", {
     });
     drop.addEventListener("drop", function (e) {
       var f = e.dataTransfer.files[0];
-      if (f) { fileName = f.name; splitBtn.disabled = false; }
+      if (f) { fileName = f.name; currentFile = f; splitBtn.disabled = false; }
     });
     fileInput.addEventListener("change", function () {
       var f = fileInput.files[0];
-      if (f) { fileName = f.name; splitBtn.disabled = false; }
+      if (f) { fileName = f.name; currentFile = f; splitBtn.disabled = false; }
       fileInput.value = "";
     });
     splitBtn.addEventListener("click", split);

@@ -25,7 +25,7 @@ ToolBox.define("paragraph-spacing", {
       var paras = v.split(/\n\s*\n/).map(function (p) {
         return p.split("\n").map(function (l) { return l.trim(); }).filter(Boolean).join(" ");
       }).filter(Boolean);
-      var sep = "\n".repeat(n + 1);
+      var sep = n === 0 ? " " : "\n".repeat(n + 1); // "None" runs paragraphs together
       box.querySelector("#output").value = paras.join(sep);
       box.querySelector("#report").textContent = paras.length + " paragraph" + (paras.length === 1 ? "" : "s");
       box.querySelector("#report").style.color = "var(--muted)";
