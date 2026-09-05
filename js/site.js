@@ -342,7 +342,7 @@
       + "</div>";
 
     var s = document.createElement("script");
-    s.src = b + "js/tools/" + slug + ".js?v=7";
+    s.src = b + "js/tools/" + slug + ".js?v=8";
     s.onload = function () {
       var box = page.querySelector("#tool-box");
       var mod = modules[slug];

@@ -419,22 +419,36 @@ ToolBox.define("dither-studio", {
     /* ================= effects (post-dither) ================= */
     function clamp255(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
     function boxBlur(d, W, H, r) {
-      var out = new Uint8ClampedArray(d);
+      /* separable two-pass box blur — O(n·r) instead of O(n·r²), keeps glow cheap */
       var n = W * H;
-      for (var y = 0; y < H; y++) {
-        for (var x = 0; x < W; x++) {
-          var acc = [0, 0, 0], cnt = 0;
-          for (var dy = -r; dy <= r; dy++) {
-            var ny = y + dy; if (ny < 0 || ny >= H) continue;
-            for (var dx = -r; dx <= r; dx++) {
-              var nx = x + dx; if (nx < 0 || nx >= W) continue;
-              var j = (ny * W + nx) * 4;
-              acc[0] += out[j]; acc[1] += out[j + 1]; acc[2] += out[j + 2];
-              cnt++;
-            }
+      var tmp = new Float32Array(n * 3);
+      var x, y, dx, dy;
+      for (y = 0; y < H; y++) {
+        for (x = 0; x < W; x++) {
+          var a0 = 0, a1 = 0, a2 = 0, cnt = 0;
+          for (dx = -r; dx <= r; dx++) {
+            var nx = x + dx;
+            if (nx < 0 || nx >= W) continue;
+            var j = (y * W + nx) * 4;
+            a0 += d[j]; a1 += d[j + 1]; a2 += d[j + 2];
+            cnt++;
           }
-          var i = (y * W + x) * 4;
-          d[i] = acc[0] / cnt; d[i + 1] = acc[1] / cnt; d[i + 2] = acc[2] / cnt;
+          var i3 = (y * W + x) * 3;
+          tmp[i3] = a0 / cnt; tmp[i3 + 1] = a1 / cnt; tmp[i3 + 2] = a2 / cnt;
+        }
+      }
+      for (y = 0; y < H; y++) {
+        for (x = 0; x < W; x++) {
+          var b0 = 0, b1 = 0, b2 = 0, cnt2 = 0;
+          for (dy = -r; dy <= r; dy++) {
+            var ny = y + dy;
+            if (ny < 0 || ny >= H) continue;
+            var j2 = (ny * W + x) * 3;
+            b0 += tmp[j2]; b1 += tmp[j2 + 1]; b2 += tmp[j2 + 2];
+            cnt2++;
+          }
+          var i4 = (y * W + x) * 4;
+          d[i4] = b0 / cnt2; d[i4 + 1] = b1 / cnt2; d[i4 + 2] = b2 / cnt2;
         }
       }
     }
@@ -690,8 +704,23 @@ ToolBox.define("dither-studio", {
     }
     function renderPreview() {
       if (!img) return;
-      currentResult = buildResult(1400);
+      currentResult = buildResult(960); /* interactive preview stays light; export uses full res */
       drawCurrent();
+    }
+    /* coalesced, throttled rendering for continuous inputs (slider drags, effect sliders) */
+    var renderQueued = false;
+    var lastRenderAt = 0;
+    var RENDER_MIN_MS = 60;
+    function scheduleRender() {
+      if (renderQueued) return;
+      renderQueued = true;
+      requestAnimationFrame(function () {
+        renderQueued = false;
+        var now = performance.now();
+        if (now - lastRenderAt < RENDER_MIN_MS) { scheduleRender(); return; }
+        lastRenderAt = now;
+        renderPreview();
+      });
     }
 
     /* ================= state / history ================= */
@@ -759,7 +788,7 @@ ToolBox.define("dither-studio", {
       pair[0].addEventListener("input", function () {
         state[pair[1]] = Number(pair[0].value);
         $(pair[2]).textContent = pair[0].value + pair[3];
-        renderPreview();
+        scheduleRender();
       });
       pair[0].addEventListener("change", pushHistory);
     });
@@ -854,7 +883,7 @@ ToolBox.define("dither-studio", {
           var v = Number(this.value);
           state.effects[idx].v = v;
           row.querySelector(".ds-effect-v").textContent = v;
-          renderPreview();
+          scheduleRender();
         });
         row.querySelector("input").addEventListener("change", pushHistory);
         row.querySelector('[data-act="up"]').addEventListener("click", function () {
