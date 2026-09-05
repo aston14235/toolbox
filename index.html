@@ -110,12 +110,12 @@
         var sb = document.getElementById('intro-sound');
         if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
         var p = v.play();
-        if (p && p.catch) p.catch(function () {
+        if (p && p.then) p.then(ensureSoundPref).catch(function () {
           /* same muted-retry as autoplay, for safety */
           v.muted = true;
           if (sb) sb.textContent = '🔇 Sound';
           var p2 = v.play();
-          if (p2 && p2.catch) p2.catch(function () {});
+          if (p2 && p2.then) p2.then(ensureSoundPref).catch(function () {});
         });
       };
 
@@ -132,6 +132,19 @@
       v.muted = soundPref !== 'on';
       var sb = document.getElementById('intro-sound');
       if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
+      /* once playback is running, restore the user's saved sound choice (they've interacted with this
+         site, so the browser should honor unmuting) */
+      function ensureSoundPref() {
+        if (v.muted) {
+          var pref = 'on';
+          try { pref = localStorage.getItem('tb_intro_sound') || 'on'; } catch (e) {}
+          if (pref === 'on') {
+            v.muted = false;
+            var b = document.getElementById('intro-sound');
+            if (b) b.textContent = '🔊 Sound';
+          }
+        }
+      }
       var started = false;
       function markStarted() { started = true; }
       v.addEventListener('playing', markStarted);
@@ -140,13 +153,13 @@
       v.addEventListener('error', function () { finish(); });
       function tryPlay(mutedRetry) {
         var p = v.play();
-        if (p && p.catch) p.catch(function () {
+        if (p && p.then) p.then(ensureSoundPref).catch(function () {
           /* autoplay blocked — usually because sound was requested before any interaction on this browser.
              Retry muted once; only give up if even muted playback is refused. */
           if (!mutedRetry) {
             v.muted = true;
-            var sb2 = document.getElementById('intro-sound');
-            if (sb2) sb2.textContent = '🔇 Sound';
+            var sb3 = document.getElementById('intro-sound');
+            if (sb3) sb3.textContent = '🔇 Sound';
             tryPlay(true);
           } else {
             finish();
