@@ -173,30 +173,23 @@ body.js .reveal.in { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .bg-orb {
   position: absolute;
-  border-radius: 50%;
-  will-change: transform, border-radius;
-  animation:
-    orbWander var(--dur, 18s) ease-in-out infinite var(--dir, alternate),
-    orbMorph var(--morph, 14s) ease-in-out infinite alternate;
-  animation-delay: var(--delay, -3s), var(--morph-delay, -5s);
+  /* Blob silhouette is set per-orb as a static border-radius (random in JS).
+     Animated border-radius repaints every frame, so we only animate
+     transform here — that stays on the GPU compositor. */
+  will-change: transform;
+  animation: orbWander var(--dur, 18s) ease-in-out infinite var(--dir, alternate);
+  animation-delay: var(--delay, -3s);
 }
 @keyframes orbWander {
-  0% { transform: translate(0, 0) scale(1, 1); }
-  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) scale(1.06, 0.96); }
-  25% { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) scale(0.96, 1.05); }
-  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) scale(1.04, 0.98); }
-  50% { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) scale(0.98, 1.06); }
-  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) scale(1.05, 0.97); }
-  75% { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) scale(0.95, 1.04); }
-  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) scale(1.03, 0.98); }
-  100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) scale(1, 1); }
-}
-@keyframes orbMorph {
-  0% { border-radius: 42% 58% 61% 39% / 45% 42% 58% 55%; }
-  25% { border-radius: 55% 45% 38% 62% / 60% 38% 62% 40%; }
-  50% { border-radius: 47% 53% 65% 35% / 40% 60% 40% 60%; }
-  75% { border-radius: 60% 40% 44% 56% / 52% 62% 38% 48%; }
-  100% { border-radius: 42% 58% 61% 39% / 45% 42% 58% 55%; }
+  0% { transform: translate(0, 0) scale(1, 1) rotate(0deg); }
+  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) scale(1.07, 0.95) rotate(3deg); }
+  25% { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) scale(0.95, 1.06) rotate(-4deg); }
+  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) scale(1.05, 0.97) rotate(2deg); }
+  50% { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) scale(0.97, 1.07) rotate(-3deg); }
+  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) scale(1.06, 0.96) rotate(4deg); }
+  75% { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) scale(0.94, 1.05) rotate(-2deg); }
+  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) scale(1.04, 0.98) rotate(3deg); }
+  100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) scale(1, 1) rotate(0deg); }
 }
 
 /* Hero ambient glow */
@@ -220,14 +213,20 @@ body.js .reveal.in { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   position: absolute;
   inset: -24% -10%;
   border-radius: 999px;
-  filter: blur(18px);
   opacity: 0.75;
   z-index: -1;
   pointer-events: none;
   transition: opacity 0.4s ease;
 }
 .gooey-search:focus-within .gooey-bg { opacity: 1; }
-.gooey-orb { position: absolute; border-radius: 50%; }
+.gooey-orb {
+  position: absolute;
+  border-radius: 50%;
+  /* Blur lives on the orbs (not the container) so each orb blurs once on its
+     own layer — its transform animation then stays GPU-compositor-only. */
+  filter: blur(18px);
+  will-change: transform;
+}
 .gooey-orb-1 {
   width: 65%;
   height: 150%;

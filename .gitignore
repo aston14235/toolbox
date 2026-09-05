@@ -14,3 +14,6 @@ Desktop.ini
 # Backups / temp
 *.log
 *.tmp
+
+# Local build tooling (Tailwind CLI binary — the compiled css/tailwind.css is committed)
+.tools/

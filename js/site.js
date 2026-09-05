@@ -373,8 +373,12 @@
       var m = Math.round(30 + Math.random() * 100);   // wander radius 30-130px
       var w = function () { return Math.round((Math.random() * 2 - 1) * m); };
       var dir = Math.random() < 0.5 ? "alternate" : "alternate-reverse";
+      // Static blob silhouette (random per orb) — organic shape without
+      // animating border-radius, which would repaint every frame.
+      var br = function () { return 35 + Math.round(Math.random() * 30); };
       html += '<span class="bg-orb" style="width:' + size + "px;height:" + size
         + 'px;left:' + x.toFixed(1) + "vw;top:" + y.toFixed(1) + "vh;"
+        + "border-radius:" + br() + "% " + br() + "% " + br() + "% " + br() + "% / " + br() + "% " + br() + "% " + br() + "% " + br() + "%;"
         + "background:radial-gradient(circle, rgba(" + c.rgb + "," + c.a + "), rgba(" + c.rgb + ",0.04) 55%, transparent 72%);"
         + "animation-duration:" + dur + "s;animation-delay:" + delay + "s;animation-direction:" + dir + ";"
         + "--w1x:" + w() + "px;--w1y:" + w() + "px;"

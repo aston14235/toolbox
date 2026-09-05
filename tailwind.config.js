@@ -1,8 +1,9 @@
-/* ===== ToolBox · Tailwind (Play CDN) configuration — Cobalt dark theme =====
-   Load AFTER https://cdn.tailwindcss.com so `tailwind.config` is picked up. */
-window.tailwind = window.tailwind || {};
-window.tailwind.config = {
+/* ===== ToolBox · Tailwind config (static build) — Cobalt dark theme =====
+   Compiled once with the Tailwind CLI into css/tailwind.css.
+   The runtime Play CDN is gone — nothing recompiles in the browser. */
+module.exports = {
   darkMode: "class",
+  content: ["./*.html", "./tools/*.html", "./js/**/*.js"],
   theme: {
     extend: {
       colors: {
