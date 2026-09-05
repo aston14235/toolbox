@@ -55,6 +55,9 @@
       o.dataset.done = '1';
       o.classList.add('hide');
       document.body.classList.remove('intro-lock');
+      /* cut the audio: pause the video immediately instead of letting it play behind the fade */
+      var v = document.getElementById('intro-video');
+      if (v) v.pause();
       setTimeout(function () { o.classList.add('gone'); }, 900);
     };
     window.__introToggleSound = function () {
@@ -83,6 +86,9 @@
         ov.dataset.done = '1';
         ov.classList.add('hide');
         document.body.classList.remove('intro-lock');
+        /* cut the audio: pause the video immediately instead of letting it play behind the fade */
+        var v = document.getElementById('intro-video');
+        if (v) v.pause();
         setTimeout(function () { ov.classList.add('gone'); }, 900);
       }
       /* replayable from the footer button (defined before any early exit) */
