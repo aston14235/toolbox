@@ -55,7 +55,6 @@
       o.dataset.done = '1';
       o.classList.add('hide');
       document.body.classList.remove('intro-lock');
-      try { sessionStorage.setItem('tb_intro_seen', '1'); } catch (e) {}
       setTimeout(function () { o.classList.add('gone'); }, 900);
     };
     window.__introToggleSound = function () {
@@ -77,8 +76,6 @@
       var ov = document.getElementById('intro-overlay');
       if (!ov) return;
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var seen = false;
-      try { seen = sessionStorage.getItem('tb_intro_seen') === '1'; } catch (e) {}
       var soundPref = null;
       try { soundPref = localStorage.getItem('tb_intro_sound'); } catch (e) {}
       function finish() {
@@ -87,11 +84,9 @@
         ov.classList.add('hide');
         document.body.classList.remove('intro-lock');
         setTimeout(function () { ov.classList.add('gone'); }, 900);
-        try { sessionStorage.setItem('tb_intro_seen', '1'); } catch (e) {}
       }
       /* replayable from the footer button (defined before any early exit) */
       window.replayIntro = function () {
-        try { sessionStorage.removeItem('tb_intro_seen'); } catch (e) {}
         ov.classList.remove('gone', 'hide');
         ov.dataset.done = '';
         document.body.classList.add('intro-lock');
@@ -118,7 +113,7 @@
         });
       };
 
-      if (reduce || seen) {
+      if (reduce) {
         ov.classList.add('gone');
         /* don't keep the hidden video playing in the background */
         var sv = document.getElementById('intro-video');
