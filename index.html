@@ -64,6 +64,7 @@
       v.muted = !v.muted;
       var b = document.getElementById('intro-sound');
       if (b) b.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
+      try { localStorage.setItem('tb_intro_sound', v.muted ? 'off' : 'on'); } catch (e) {}
     };
   </script>
   <header id="site-header" class="sticky top-0 z-50 border-b border-day-200/70 bg-day-50/80 backdrop-blur-md transition-colors duration-300 dark:border-night-600/60 dark:bg-night-950/80"></header>
@@ -78,6 +79,8 @@
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var seen = false;
       try { seen = sessionStorage.getItem('tb_intro_seen') === '1'; } catch (e) {}
+      var soundPref = null;
+      try { soundPref = localStorage.getItem('tb_intro_sound'); } catch (e) {}
       function finish() {
         if (ov.dataset.done) return;
         ov.dataset.done = '1';
@@ -97,9 +100,14 @@
         v.src = 'assets/intro.mp4';
         v.load();
         v.currentTime = 0;
-        v.muted = false; /* replay is user-triggered, so sound is allowed */
+        /* replay is user-triggered: sound unless they explicitly chose 'off'; first ever replay counts as their choice.
+           read the live stored value so an in-session toggle always wins */
+        var livePref = null;
+        try { livePref = localStorage.getItem('tb_intro_sound'); } catch (e) {}
+        if (livePref === null) { livePref = 'on'; try { localStorage.setItem('tb_intro_sound', 'on'); } catch (e) {} }
+        v.muted = livePref === 'off';
         var sb = document.getElementById('intro-sound');
-        if (sb) sb.textContent = '🔊 Sound';
+        if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
         var p = v.play();
         if (p && p.catch) p.catch(function () {});
       };
@@ -113,9 +121,10 @@
       }
       document.body.classList.add('intro-lock');
       var v = document.getElementById('intro-video');
-      v.muted = true; /* autoplay policy: first play is always muted */
+      /* respect saved sound preference (autoplay-with-sound is allowed once the user has interacted with the domain) */
+      v.muted = soundPref !== 'on';
       var sb = document.getElementById('intro-sound');
-      if (sb) sb.textContent = '🔇 Sound';
+      if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
       var started = false;
       v.addEventListener('playing', function () { started = true; });
       v.addEventListener('ended', finish);
