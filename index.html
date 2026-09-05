@@ -109,7 +109,13 @@
         var sb = document.getElementById('intro-sound');
         if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
         var p = v.play();
-        if (p && p.catch) p.catch(function () {});
+        if (p && p.catch) p.catch(function () {
+          /* same muted-retry as autoplay, for safety */
+          v.muted = true;
+          if (sb) sb.textContent = '🔇 Sound';
+          var p2 = v.play();
+          if (p2 && p2.catch) p2.catch(function () {});
+        });
       };
 
       if (reduce || seen) {
@@ -126,13 +132,29 @@
       var sb = document.getElementById('intro-sound');
       if (sb) sb.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
       var started = false;
-      v.addEventListener('playing', function () { started = true; });
+      function markStarted() { started = true; }
+      v.addEventListener('playing', markStarted);
+      v.addEventListener('timeupdate', markStarted); /* backup: fires once playback is actually advancing */
       v.addEventListener('ended', finish);
       v.addEventListener('error', function () { finish(); });
-      var p = v.play();
-      if (p && p.catch) p.catch(function () { finish(); });
+      function tryPlay(mutedRetry) {
+        var p = v.play();
+        if (p && p.catch) p.catch(function () {
+          /* autoplay blocked — usually because sound was requested before any interaction on this browser.
+             Retry muted once; only give up if even muted playback is refused. */
+          if (!mutedRetry) {
+            v.muted = true;
+            var sb2 = document.getElementById('intro-sound');
+            if (sb2) sb2.textContent = '🔇 Sound';
+            tryPlay(true);
+          } else {
+            finish();
+          }
+        });
+      }
+      tryPlay(false);
       /* safety nets: never leave the site stuck behind a dead video */
-      setTimeout(function () { if (!started) finish(); }, 3500);
+      setTimeout(function () { if (!started && v.currentTime <= 0 && v.readyState < 3) finish(); }, 3500);
       setTimeout(function () { if (!ov.dataset.done) finish(); }, 15000); /* hard cap, video is 10s */
       document.getElementById('intro-skip').addEventListener('click', finish);
     })();
