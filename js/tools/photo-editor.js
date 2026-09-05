@@ -392,8 +392,23 @@ ToolBox.define("photo-editor", {
 
     function renderPreview() {
       if (!img) return;
-      currentResult = buildResult(state, 1400);
+      currentResult = buildResult(state, 960); /* interactive preview stays light; export uses full res */
       drawCurrent();
+    }
+    /* coalesced, throttled rendering for continuous slider drags */
+    var renderQueued = false;
+    var lastRenderAt = 0;
+    var RENDER_MIN_MS = 60;
+    function scheduleRender() {
+      if (renderQueued) return;
+      renderQueued = true;
+      requestAnimationFrame(function () {
+        renderQueued = false;
+        var now = performance.now();
+        if (now - lastRenderAt < RENDER_MIN_MS) { scheduleRender(); return; }
+        lastRenderAt = now;
+        renderPreview();
+      });
     }
     function areaFit(W, H) {
       var area = wrapEl.parentElement;
@@ -460,7 +475,7 @@ ToolBox.define("photo-editor", {
       el.addEventListener("input", function () {
         state.adj[pair[1]] = Number(el.value);
         $(pair[0] + "-v").textContent = el.value;
-        renderPreview();
+        scheduleRender();
       });
       el.addEventListener("change", pushHistory);
     });
@@ -476,14 +491,14 @@ ToolBox.define("photo-editor", {
       state.rotate = Number(rotateEl.value);
       $("a-rotate-v").textContent = rotateEl.value + "°";
       state.crop = null;
-      renderPreview();
+      scheduleRender();
     });
     rotateEl.addEventListener("change", pushHistory);
     var scaleEl = $("a-scale");
     scaleEl.addEventListener("input", function () {
       state.scale = Number(scaleEl.value);
       $("a-scale-v").textContent = scaleEl.value + "%";
-      renderPreview();
+      scheduleRender();
     });
     scaleEl.addEventListener("change", pushHistory);
 

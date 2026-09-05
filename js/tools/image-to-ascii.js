@@ -221,13 +221,27 @@ ToolBox.define("image-to-ascii", {
       if (f) load(f);
       fileInput.value = "";
     });
+    /* coalesced, throttled conversion for slider drags (full conversion per tick was heavy on big images) */
+    var convertQueued = false;
+    var convertLast = 0;
+    function scheduleConvert() {
+      if (convertQueued) return;
+      convertQueued = true;
+      requestAnimationFrame(function () {
+        convertQueued = false;
+        var now = performance.now();
+        if (now - convertLast < 60) { scheduleConvert(); return; }
+        convertLast = now;
+        convert();
+      });
+    }
     ["style", "contrast", "brightness", "dither", "invert"].forEach(function (id) {
-      box.querySelector("#" + id).addEventListener("input", convert);
+      box.querySelector("#" + id).addEventListener("input", scheduleConvert);
       box.querySelector("#" + id).addEventListener("change", convert);
     });
     widthEl.addEventListener("input", function () {
       box.querySelector("#width-label").textContent = widthEl.value;
-      convert();
+      scheduleConvert();
     });
     box.querySelector("#contrast").addEventListener("input", function () {
       box.querySelector("#contrast-label").textContent = box.querySelector("#contrast").value + "%";

@@ -287,6 +287,9 @@
     if (!follow) return;
     if (window.matchMedia && (window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
     var x = 0, y = 0, cx = 0, cy = 0, raf = null;
+    /* cache the rect — reading layout on every mousemove forces needless reflows */
+    var rect = null;
+    window.addEventListener("resize", function () { rect = null; });
     function tick() {
       cx += (x - cx) * 0.14;
       cy += (y - cy) * 0.14;
@@ -294,9 +297,9 @@
       raf = (Math.abs(x - cx) > 0.4 || Math.abs(y - cy) > 0.4) ? requestAnimationFrame(tick) : null;
     }
     wrap.addEventListener("mousemove", function (e) {
-      var r = wrap.getBoundingClientRect();
-      x = e.clientX - r.left;
-      y = e.clientY - r.top;
+      if (!rect) rect = wrap.getBoundingClientRect();
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
       follow.style.opacity = "1";
       if (!raf) raf = requestAnimationFrame(tick);
     });
@@ -342,7 +345,7 @@
       + "</div>";
 
     var s = document.createElement("script");
-    s.src = b + "js/tools/" + slug + ".js?v=8";
+    s.src = b + "js/tools/" + slug + ".js?v=9";
     s.onload = function () {
       var box = page.querySelector("#tool-box");
       var mod = modules[slug];
