@@ -117,9 +117,10 @@
     var KEY = "toolbox-theme";
     var root = document.documentElement;
     var theme = localStorage.getItem(KEY);
-    if (!theme) theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    if (!theme) theme = "dark"; // cobalt black is the default look
     function apply(t) {
       root.dataset.theme = t;
+      root.classList.toggle("dark", t === "dark");
       var btn = document.getElementById("theme-toggle");
       if (btn) {
         btn.textContent = t === "dark" ? "☀️" : "🌙";
@@ -137,73 +138,108 @@
     }
   }
 
+  /* ================= Reveal-on-scroll ================= */
+  function initReveal(scope) {
+    var cards = scope.querySelectorAll(".card");
+    if (!cards.length) return;
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!("IntersectionObserver" in window) || reduced) {
+      cards.forEach(function (c) { c.classList.add("in"); });
+      return;
+    }
+    cards.forEach(function (c, i) {
+      c.classList.add("reveal");
+      c.style.animationDelay = Math.min(i * 45, 500) + "ms";
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add("in");
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.05, rootMargin: "0px 0px -40px 0px" });
+    cards.forEach(function (c) { io.observe(c); });
+  }
+
   /* ================= Header / footer ================= */
   function navHtml(active) {
     var b = base();
-    var h = '<a href="' + b + 'index.html"' + (active === "home" ? ' class="active"' : "") + '>Home</a>';
+    function pill(href, label, isActive) {
+      return '<a href="' + href + '" class="nav-pill' + (isActive ? " active" : "") + '">' + label + "</a>";
+    }
+    var h = pill(b + "index.html", "Home", active === "home");
     CATS.forEach(function (c) {
-      h += '<a href="' + b + 'category.html?cat=' + c.slug + '"' + (c.slug === active ? ' class="active"' : "") + ">" + esc(c.name) + "</a>";
+      h += pill(b + "category.html?cat=" + c.slug, esc(c.name), c.slug === active);
     });
     return h;
   }
   function headerHtml(active) {
     var b = base();
-    return '<div class="container header-inner">'
-      + '<a href="' + b + 'index.html" class="logo">🛠️ Tool<span>Box</span></a>'
-      + '<nav class="nav">' + navHtml(active) + '</nav>'
+    return '<div class="mx-auto flex w-[min(1100px,92%)] flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3.5">'
+      + '<a href="' + b + 'index.html" class="group flex items-center gap-2 text-xl font-extrabold tracking-tight text-day-900 no-underline transition-transform duration-300 hover:-translate-y-0.5 dark:text-night-200">'
+      + '<span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cobalt-400 to-cobalt-700 text-lg shadow-glow transition-transform duration-300 group-hover:scale-110">🛠️</span>'
+      + "Tool<span class=\"cobalt-grad\">Box</span></a>"
+      + '<nav class="flex flex-wrap items-center gap-1">' + navHtml(active) + "</nav>"
       + '<button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">🌙</button>'
       + "</div>";
   }
   function footerHtml() {
-    return '<div class="container">'
-      + "<p>🛠️ ToolBox — free tools that run right in your browser.</p>"
-      + '<p class="small">No sign-ups · No ads · No uploads (everything stays on your device)</p>'
-      + '<nav class="footer-nav">' + navHtml("") + "</nav>"
+    return '<div class="mx-auto w-[min(1100px,92%)]">'
+      + '<p class="font-semibold text-day-900 dark:text-night-200">🛠️ ToolBox — free tools that run right in your browser.</p>'
+      + '<p class="small mt-1">No sign-ups · No ads · No uploads (everything stays on your device)</p>'
+      + '<nav class="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">' + navHtml("") + "</nav>"
       + "</div>";
   }
 
   /* ================= Cards ================= */
   function toolCard(t) {
     var b = base();
-    return '<a class="card" href="' + b + 'tools/tool.html?t=' + t.slug + '">'
-      + '<span class="emoji">' + t.emoji + "</span>"
-      + "<h3>" + esc(t.name) + "</h3>"
-      + "<p>" + esc(t.desc) + "</p>"
+    return '<a class="card group flex flex-col gap-2 rounded-2xl border border-day-200 bg-white p-5 shadow-sm no-underline transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-cobalt-400/70 hover:shadow-glow-soft dark:border-night-600 dark:bg-night-800 dark:shadow-card dark:hover:border-cobalt-400/50" href="' + b + 'tools/tool.html?t=' + t.slug + '">'
+      + '<span class="text-3xl leading-none transition-transform duration-300 group-hover:scale-110">' + t.emoji + "</span>"
+      + '<h3 class="text-base font-bold text-day-900 dark:text-night-200">' + esc(t.name) + "</h3>"
+      + '<p class="flex-1 text-sm text-day-500 dark:text-night-400">' + esc(t.desc) + "</p>"
       + '<span class="tag">' + esc(catName(t.cat)) + "</span>"
-      + '<span class="card-link">Open tool</span>'
+      + '<span class="mt-1 flex items-center gap-1.5 text-sm font-bold text-cobalt-600 transition-all duration-300 group-hover:gap-3 dark:text-cobalt-300">Open tool <span aria-hidden="true">→</span></span>'
       + "</a>";
   }
   function catCard(c) {
     var b = base();
     var n = toolsOf(c.slug).length;
-    return '<a class="card" href="' + b + "category.html?cat=" + c.slug + '">'
-      + '<span class="emoji">' + c.emoji + "</span>"
-      + "<h3>" + esc(c.name) + "</h3>"
-      + "<p>" + esc(c.desc) + "</p>"
+    return '<a class="card group flex flex-col gap-2 rounded-2xl border border-day-200 bg-white p-5 shadow-sm no-underline transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-cobalt-400/70 hover:shadow-glow-soft dark:border-night-600 dark:bg-night-800 dark:shadow-card dark:hover:border-cobalt-400/50" href="' + b + "category.html?cat=" + c.slug + '">'
+      + '<span class="text-3xl leading-none transition-transform duration-300 group-hover:scale-110">' + c.emoji + "</span>"
+      + '<h3 class="text-base font-bold text-day-900 dark:text-night-200">' + esc(c.name) + "</h3>"
+      + '<p class="flex-1 text-sm text-day-500 dark:text-night-400">' + esc(c.desc) + "</p>"
       + '<span class="tag">' + n + (n === 1 ? " tool" : " tools") + "</span>"
-      + '<span class="card-link">Explore</span>'
+      + '<span class="mt-1 flex items-center gap-1.5 text-sm font-bold text-cobalt-600 transition-all duration-300 group-hover:gap-3 dark:text-cobalt-300">Explore <span aria-hidden="true">→</span></span>'
       + "</a>";
   }
 
   /* ================= Pages ================= */
   function renderHome(page) {
-    var b = base();
     page.innerHTML =
-      '<section class="hero container">'
-      + "<h1>Free tools for <span class=\"grad\">everyday tasks</span></h1>"
-      + "<p>Whether you're drafting an essay, resizing a photo, or settling a debate with a coin flip — every tool here runs right in your browser. No sign-ups, no ads, and nothing you make ever leaves your device.</p>"
-      + '<div class="search-wrap"><span class="search-icon">🔍</span><input type="search" id="search" placeholder="Search tools… (e.g. compress, json, pomodoro)" autocomplete="off"></div>'
+      '<section class="hero px-0 pb-10 pt-16 text-center">'
+      + '<div class="animate-fade-up">'
+      + '<h1 class="text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl lg:text-6xl">Free tools for <span class="cobalt-grad animate-grad-shift bg-[length:200%]">everyday tasks</span></h1>'
+      + '<p class="mx-auto mt-4 max-w-[600px] text-lg text-day-500 dark:text-night-400">Whether you&#39;re drafting an essay, resizing a photo, or settling a debate with a coin flip — every tool here runs right in your browser. No sign-ups, no ads, and nothing you make ever leaves your device.</p>'
+      + '<div class="gooey-search relative mx-auto mt-8 max-w-[560px] animate-fade-up [animation-delay:180ms]">'
+      + '<div class="gooey-bg" aria-hidden="true"><span class="gooey-orb gooey-orb-1"></span><span class="gooey-orb gooey-orb-2"></span></div>'
+      + '<span class="gooey-follow" aria-hidden="true"></span>'
+      + '<span class="pointer-events-none absolute left-5 top-1/2 z-20 -translate-y-1/2 text-lg opacity-70">🔍</span>'
+      + '<input type="search" id="search" placeholder="Search tools… (e.g. compress, json, pomodoro)" autocomplete="off" class="gooey-input w-full rounded-full border border-day-200/80 bg-white/80 py-3.5 pl-12 pr-5 text-base text-day-900 shadow-sm outline-none backdrop-blur-sm transition-all duration-300 placeholder:text-day-500/70 hover:border-cobalt-400/60 focus:border-cobalt-400 focus:ring-4 focus:ring-cobalt-500/20 dark:border-night-600/80 dark:bg-night-900/70 dark:text-night-200 dark:placeholder:text-night-500 dark:hover:border-cobalt-400/50">'
+      + "</div>"
+      + "</div>"
       + "</section>"
-      + '<section class="section container">'
-      + '<h2 class="section-title">Categories</h2>'
-      + '<p class="section-sub">Start with a category — or use the search box if you know what you need.</p>'
-      + '<div class="grid">' + CATS.map(catCard).join("") + "</div>"
+      + '<section class="mx-auto w-[min(1100px,92%)] px-0 py-7">'
+      + '<h2 class="text-2xl font-extrabold tracking-tight text-day-900 dark:text-night-200">Categories</h2>'
+      + '<p class="mb-5 mt-1 text-day-500 dark:text-night-400">Start with a category — or use the search box if you know what you need.</p>'
+      + '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">' + CATS.map(catCard).join("") + "</div>"
       + "</section>"
-      + '<section class="section container" style="padding-bottom:72px;">'
-      + '<h2 class="section-title">All tools</h2>'
-      + '<p class="section-sub">Every tool we\'ve built so far — the search box above narrows them down. And yes, we\'re still adding more.</p>'
-      + '<div class="grid" id="tool-grid">' + TOOLS.map(toolCard).join("") + "</div>"
-      + '<p id="no-results" class="hidden" style="text-align:center; color:var(--muted); padding:20px 0;">No tools match your search. Try another keyword!</p>'
+      + '<section class="mx-auto w-[min(1100px,92%)] px-0 py-7 pb-[72px]">'
+      + '<h2 class="text-2xl font-extrabold tracking-tight text-day-900 dark:text-night-200">All tools</h2>'
+      + '<p class="mb-5 mt-1 text-day-500 dark:text-night-400">Every tool we&#39;ve built so far — the search box above narrows them down. And yes, we&#39;re still adding more.</p>'
+      + '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" id="tool-grid">' + TOOLS.map(toolCard).join("") + "</div>"
+      + '<p id="no-results" class="hidden py-5 text-center text-day-500 dark:text-night-400">No tools match your search. Try another keyword!</p>'
       + "</section>";
 
     var input = page.querySelector("#search");
@@ -217,37 +253,68 @@
       });
       page.querySelector("#no-results").classList.toggle("hidden", shown !== 0);
     });
+
+    initGooey(input);
+  }
+
+  /* ================= Gooey search (magicui GooeyInput style) ================= */
+  function initGooey(input) {
+    var wrap = input.parentElement;
+    var follow = wrap.querySelector(".gooey-follow");
+    if (!follow) return;
+    if (window.matchMedia && (window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+    var x = 0, y = 0, cx = 0, cy = 0, raf = null;
+    function tick() {
+      cx += (x - cx) * 0.14;
+      cy += (y - cy) * 0.14;
+      follow.style.transform = "translate(" + cx + "px, " + cy + "px) translate(-50%, -50%)";
+      raf = (Math.abs(x - cx) > 0.4 || Math.abs(y - cy) > 0.4) ? requestAnimationFrame(tick) : null;
+    }
+    wrap.addEventListener("mousemove", function (e) {
+      var r = wrap.getBoundingClientRect();
+      x = e.clientX - r.left;
+      y = e.clientY - r.top;
+      follow.style.opacity = "1";
+      if (!raf) raf = requestAnimationFrame(tick);
+    });
+    wrap.addEventListener("mouseleave", function () {
+      follow.style.opacity = "0";
+      if (raf) { cancelAnimationFrame(raf); raf = null; }
+    });
   }
 
   function renderCategory(page, slug) {
     var c = findCat(slug);
-    if (!c) { page.innerHTML = '<div class="container tool-shell"><h1>Category not found</h1></div>'; return; }
+    if (!c) { page.innerHTML = '<div class="mx-auto w-[min(920px,92%)] py-8 pb-16"><h1 class="text-2xl font-extrabold">Category not found</h1></div>'; return; }
     document.title = c.name + " tools · ToolBox";
     var b = base();
     var tools = toolsOf(slug);
     var planned = c.planned.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("");
     page.innerHTML =
-      '<section class="section container" style="padding-top:48px;">'
-      + '<p class="crumbs"><a href="' + b + 'index.html">Home</a> / ' + esc(c.name) + "</p>"
-      + '<h1 class="section-title" style="font-size:2rem;">' + c.emoji + " " + esc(c.name) + " tools</h1>"
-      + '<p class="section-sub">' + esc(c.desc) + "</p>"
-      + '<div class="grid">' + tools.map(toolCard).join("") + "</div>"
+      '<section class="mx-auto w-[min(1100px,92%)] px-0 pt-12">'
+      + '<p class="mb-2 text-sm text-day-500 dark:text-night-400"><a class="font-semibold transition-colors hover:text-cobalt-600 dark:text-night-400 dark:hover:text-cobalt-300" href="' + b + 'index.html">Home</a> <span class="opacity-50">/</span> <span class="text-day-900 dark:text-night-200">' + esc(c.name) + "</span></p>"
+      + '<h1 class="text-4xl font-extrabold tracking-tight text-day-900 dark:text-night-200">' + c.emoji + " " + esc(c.name) + " tools</h1>"
+      + '<p class="mb-5 mt-1 max-w-[640px] text-day-500 dark:text-night-400">' + esc(c.desc) + "</p>"
+      + '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">' + tools.map(toolCard).join("") + "</div>"
       + (planned.length
-        ? '<div class="note-box" style="margin-top:28px;"><strong>📋 Still to come:</strong><ul>' + planned + "</ul></div>"
+        ? '<div class="note-box mt-7"><strong>📋 Still to come:</strong><ul>' + planned + "</ul></div>"
         : "")
       + "</section>";
   }
 
   function renderTool(page, slug) {
     var t = findTool(slug);
-    if (!t) { page.innerHTML = '<div class="container tool-shell"><h1>Tool not found</h1></div>'; return; }
+    if (!t) { page.innerHTML = '<div class="mx-auto w-[min(920px,92%)] py-8 pb-16"><h1 class="text-2xl font-extrabold">Tool not found</h1></div>'; return; }
     document.title = t.name + " · ToolBox";
     var b = base();
     page.innerHTML =
-      '<div class="container tool-shell">'
-      + '<p class="crumbs"><a href="' + b + 'index.html">Home</a> / <a href="' + b + "category.html?cat=" + t.cat + '">' + esc(catName(t.cat)) + "</a> / " + esc(t.name) + "</p>"
-      + "<h1>" + t.emoji + " " + esc(t.name) + "</h1>"
-      + '<p class="desc">' + esc(t.desc) + "</p>"
+      '<div class="mx-auto w-[min(920px,92%)] px-0 py-8 pb-16">'
+      + '<p class="mb-2 text-sm text-day-500 dark:text-night-400">'
+      + '<a class="font-semibold transition-colors hover:text-cobalt-600 dark:text-night-400 dark:hover:text-cobalt-300" href="' + b + 'index.html">Home</a> <span class="opacity-50">/</span> '
+      + '<a class="font-semibold transition-colors hover:text-cobalt-600 dark:text-night-400 dark:hover:text-cobalt-300" href="' + b + "category.html?cat=" + t.cat + '">' + esc(catName(t.cat)) + "</a> <span class=\"opacity-50\">/</span> "
+      + '<span class="text-day-900 dark:text-night-200">' + esc(t.name) + "</span></p>"
+      + '<h1 class="text-3xl font-extrabold tracking-tight text-day-900 sm:text-4xl dark:text-night-200">' + t.emoji + " " + esc(t.name) + "</h1>"
+      + '<p class="mt-1.5 text-day-500 dark:text-night-400">' + esc(t.desc) + "</p>"
       + '<div id="tool-box"></div>'
       + "</div>";
 
@@ -275,6 +342,7 @@
 
   /* ================= Boot ================= */
   function boot() {
+    document.body.classList.add("js");
     var header = document.getElementById("site-header");
     var footer = document.getElementById("site-footer");
     var page = document.getElementById("page");
@@ -292,6 +360,8 @@
     if (route === "home") renderHome(page);
     else if (route === "category") renderCategory(page, cat || "writing");
     else if (route === "tool") renderTool(page, slug);
+
+    initReveal(page);
   }
 
   document.addEventListener("DOMContentLoaded", boot);
