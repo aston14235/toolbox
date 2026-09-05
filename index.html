@@ -28,13 +28,13 @@
       font-weight: 700; letter-spacing: .06em; opacity: .85; pointer-events: none;
       text-shadow: 0 1px 8px rgba(0,0,0,.6);
     }
-    #intro-skip {
-      position: absolute; right: 18px; bottom: 16px;
+    .intro-actions { position: absolute; right: 18px; bottom: 16px; display: flex; gap: 8px; }
+    #intro-skip, #intro-sound {
       background: rgba(13,18,28,.55); border: 1px solid rgba(139,92,246,.45); color: #e8eef7;
       font-size: .74rem; font-weight: 600; padding: 8px 16px; border-radius: 999px;
       cursor: pointer; backdrop-filter: blur(6px); transition: all .25s ease;
     }
-    #intro-skip:hover { background: rgba(139,92,246,.35); border-color: #8b5cf6; }
+    #intro-skip:hover, #intro-sound:hover { background: rgba(139,92,246,.35); border-color: #8b5cf6; }
   </style>
 </head>
 <body>
@@ -42,7 +42,10 @@
     <video id="intro-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto" onerror="window.__introDismiss&&window.__introDismiss()"></video>
     <div class="intro-vignette"></div>
     <span class="intro-brand">🛠️ ToolBox</span>
-    <button id="intro-skip" type="button" onclick="window.__introDismiss&&window.__introDismiss()">Skip intro ⏭</button>
+    <div class="intro-actions">
+      <button id="intro-sound" type="button" onclick="window.__introToggleSound&&window.__introToggleSound()">🔇 Sound</button>
+      <button id="intro-skip" type="button" onclick="window.__introDismiss&&window.__introDismiss()">Skip intro ⏭</button>
+    </div>
   </div>
   <script>
     /* fail-safe dismiss — defined first so skip/error always work, even if the main script fails */
@@ -54,6 +57,13 @@
       document.body.classList.remove('intro-lock');
       try { sessionStorage.setItem('tb_intro_seen', '1'); } catch (e) {}
       setTimeout(function () { o.classList.add('gone'); }, 900);
+    };
+    window.__introToggleSound = function () {
+      var v = document.getElementById('intro-video');
+      if (!v) return;
+      v.muted = !v.muted;
+      var b = document.getElementById('intro-sound');
+      if (b) b.textContent = v.muted ? '🔇 Sound' : '🔊 Sound';
     };
   </script>
   <header id="site-header" class="sticky top-0 z-50 border-b border-day-200/70 bg-day-50/80 backdrop-blur-md transition-colors duration-300 dark:border-night-600/60 dark:bg-night-950/80"></header>
@@ -87,6 +97,9 @@
         v.src = 'assets/intro.mp4';
         v.load();
         v.currentTime = 0;
+        v.muted = false; /* replay is user-triggered, so sound is allowed */
+        var sb = document.getElementById('intro-sound');
+        if (sb) sb.textContent = '🔊 Sound';
         var p = v.play();
         if (p && p.catch) p.catch(function () {});
       };
@@ -100,6 +113,9 @@
       }
       document.body.classList.add('intro-lock');
       var v = document.getElementById('intro-video');
+      v.muted = true; /* autoplay policy: first play is always muted */
+      var sb = document.getElementById('intro-sound');
+      if (sb) sb.textContent = '🔇 Sound';
       var started = false;
       v.addEventListener('playing', function () { started = true; });
       v.addEventListener('ended', finish);
