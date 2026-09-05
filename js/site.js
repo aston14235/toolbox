@@ -17,7 +17,7 @@
       planned: ["Image Cropper", "QR Code Generator", "Background Remover", "Image Watermarker", "Blur Image Tool", "Favicon Converter", "SVG Optimizer", "GIF Maker", "Mockup Generator"] },
     { slug: "files", name: "Files", emoji: "📁",
       desc: "Merge, convert and hash files without uploading them anywhere.",
-      planned: ["PDF Merger", "PDF Splitter", "PDF to Word", "Word to PDF", "Excel to CSV", "ZIP / Unzip", "PDF to JPG", "HEIC to JPG", "Subtitle Extractor", "File Name Bulk Renamer", "MP3 to MP4", "Video to MP3"] },
+      planned: ["PDF Merger", "PDF Splitter", "PDF to Word", "Word to PDF", "Excel to CSV", "ZIP / Unzip", "PDF to JPG", "HEIC to JPG", "Subtitle Extractor", "MP3 to MP4", "Video to MP3"] },
     { slug: "math", name: "Math & Science", emoji: "🧮",
       desc: "Fast answers for everyday math — tips, percentages, BMI and more.",
       planned: ["Loan Calculator", "Calorie Counter (BMR)", "Fuel Cost Calculator", "Day Counter", "Time Zone Converter", "Currency Converter", "Mortgage Amortization"] },
@@ -26,7 +26,7 @@
       planned: ["Meeting Agenda Builder", "Travel Itinerary Planner", "Recipe Divider", "Baby Name Generator", "Paint Color Calculator", "Retirement Calculator"] },
     { slug: "security", name: "Security", emoji: "🔒",
       desc: "Small tools that help you lock things down and sleep easier.",
-      planned: ["IP Address Lookup", "DNS Lookup", "SSL Checker", "Privacy Policy Generator", "Terms of Service Generator", "Data Breach Checker", "Secure File Shredder", "Cookie Consent Banner"] },
+      planned: ["IP Address Lookup", "DNS Lookup", "SSL Checker", "Privacy Policy Generator", "Terms of Service Generator", "Data Breach Checker", "Secure File Shredder"] },
     { slug: "fun", name: "Fun & Misc", emoji: "🎲",
       desc: "For the not-so-serious stuff: dice, names, riddles and coin flips.",
       planned: ["Meme Maker"] }
@@ -62,6 +62,9 @@
     /* Drawing */
     { slug: "whiteboard", name: "Whiteboard", emoji: "🎨", cat: "drawing", desc: "Doodle with brushes and colors, erase freely, undo mistakes — save as PNG." },
     { slug: "pixel-art", name: "Pixel Art", emoji: "🧩", cat: "drawing", desc: "Channel the 8-bit era — paint pixel by pixel and download your masterpiece." },
+    { slug: "symmetry-painter", name: "Symmetry Painter", emoji: "🪞", cat: "drawing", desc: "Draw once, see it mirrored 2, 4, 6 or 8 times around the center — save as PNG." },
+    { slug: "spiral-art", name: "Spiral Art", emoji: "🌀", cat: "drawing", desc: "Archimedean, logarithmic or Fermat spirals drawn live — animate the draw and export." },
+    { slug: "fractal-tree", name: "Fractal Tree", emoji: "🌳", cat: "drawing", desc: "Grow recursive fractal trees with adjustable depth, angle and trunk — then watch them animate." },
     /* Image & Design */
     { slug: "image-compressor", name: "Image Compressor", emoji: "🗜️", cat: "image", desc: "Slim down images right in the browser — nothing ever gets uploaded." },
     { slug: "image-resizer", name: "Image Resizer", emoji: "📐", cat: "image", desc: "Scale an image to exact pixel sizes, no photo app needed." },
@@ -74,6 +77,9 @@
     { slug: "text-merge", name: "Text Merger", emoji: "📚", cat: "files", desc: "Combine several text files into one, with a separator of your choice." },
     { slug: "jpg-to-pdf", name: "JPG to PDF", emoji: "📄", cat: "files", desc: "Drop in a few photos and export them as a single PDF." },
     { slug: "csv-to-excel", name: "CSV to Excel", emoji: "📊", cat: "files", desc: "Open a CSV, peek at the data, then export it as an Excel file." },
+    { slug: "text-file-splitter", name: "Text File Splitter", emoji: "✂️", cat: "files", desc: "Slice a big text file into parts by line count or size, then download them all." },
+    { slug: "csv-json", name: "CSV ↔ JSON Converter", emoji: "🔄", cat: "files", desc: "Flip between CSV and JSON in both directions — quote-aware parsing built in." },
+    { slug: "file-renamer", name: "Bulk File Renamer", emoji: "🏷️", cat: "files", desc: "Rename a whole folder of files with one pattern — index, date, name and more." },
     /* Math & Science */
     { slug: "percentage", name: "Percentage Calculator", emoji: "💯", cat: "math", desc: "What's X% of Y? What percent is X of Y? How much did it change? All answered here." },
     { slug: "bmi", name: "BMI Calculator", emoji: "⚖️", cat: "math", desc: "Your BMI in seconds, plus where it lands on the healthy scale." },
@@ -87,9 +93,15 @@
     /* Productivity */
     { slug: "pomodoro", name: "Pomodoro Timer", emoji: "🍅", cat: "productivity", desc: "Classic 25-minute focus sprints with built-in breaks." },
     { slug: "todo-list", name: "To-Do List", emoji: "✅", cat: "productivity", desc: "A no-fuss checklist that remembers itself between visits." },
+    { slug: "stopwatch", name: "Stopwatch", emoji: "⏱️", cat: "productivity", desc: "Precision timing with laps and splits — for workouts, cooking or speedruns." },
+    { slug: "habit-tracker", name: "Habit Tracker", emoji: "📅", cat: "productivity", desc: "Check off habits day by day and watch your streak grow — saved in your browser." },
+    { slug: "typing-speed", name: "Typing Speed Test", emoji: "⌨️", cat: "productivity", desc: "Measure your words per minute and accuracy on a live typing test." },
     /* Security */
     { slug: "password-strength", name: "Password Strength Tester", emoji: "🛡️", cat: "security", desc: "Find out how long a cracker would need — and how to make it longer." },
     { slug: "email-mask", name: "Email Mask Generator", emoji: "🎭", cat: "security", desc: "Generate throwaway email aliases so your real inbox stays private." },
+    { slug: "text-encryptor", name: "Text Encryptor", emoji: "🔐", cat: "security", desc: "Scramble text with AES-256-GCM and a passphrase — decrypt it right back, offline." },
+    { slug: "backup-codes", name: "Backup Codes Generator", emoji: "🎟️", cat: "security", desc: "Roll one-time recovery codes for 2FA — copy them all or download as a file." },
+    { slug: "cookie-banner", name: "Cookie Banner Generator", emoji: "🍪", cat: "security", desc: "Generate a ready-to-paste cookie-consent banner with your message, buttons and color." },
     /* Fun */
     { slug: "name-picker", name: "Random Name Picker", emoji: "🎯", cat: "fun", desc: "Who's the winner? Drop in names and find out." },
     { slug: "dice-roller", name: "Dice Roller", emoji: "🎲", cat: "fun", desc: "Roll one die or ten, with any number of sides." },
@@ -230,7 +242,7 @@
       + "</div>"
       + "</div>"
       + "</section>"
-      + '<section class="mx-auto w-[min(1100px,92%)] px-0 py-7">'
+      + '<section class="mx-auto w-[min(1100px,92%)] px-0 py-7" id="cats-section">'
       + '<h2 class="text-2xl font-extrabold tracking-tight text-day-900 dark:text-night-200">Categories</h2>'
       + '<p class="mb-5 mt-1 text-day-500 dark:text-night-400">Start with a category — or use the search box if you know what you need.</p>'
       + '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">' + CATS.map(catCard).join("") + "</div>"
@@ -249,8 +261,13 @@
       page.querySelectorAll("#tool-grid .card").forEach(function (c) {
         var ok = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
         c.style.display = ok ? "" : "none";
-        if (ok) shown++;
+        if (ok) {
+          shown++;
+          c.classList.add("in");
+          c.style.animationDelay = "0ms";
+        }
       });
+      page.querySelector("#cats-section").classList.toggle("hidden", !!q);
       page.querySelector("#no-results").classList.toggle("hidden", shown !== 0);
     });
 
@@ -319,7 +336,7 @@
       + "</div>";
 
     var s = document.createElement("script");
-    s.src = b + "js/tools/" + slug + ".js";
+    s.src = b + "js/tools/" + slug + ".js?v=2";
     s.onload = function () {
       var box = page.querySelector("#tool-box");
       var mod = modules[slug];
