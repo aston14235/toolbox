@@ -72,6 +72,8 @@
     { slug: "contrast-checker", name: "Color Contrast Checker", emoji: "👁️", cat: "image", desc: "Make sure your text is actually readable — check contrast ratios here." },
     { slug: "color-scheme", name: "Color Scheme Generator", emoji: "🌈", cat: "image", desc: "Pick a color — wheel, slider or name — and get a smooth board of its shades." },
     { slug: "image-to-ascii", name: "Image to ASCII", emoji: "🔤", cat: "image", desc: "Turn a photo into glorious text art." },
+    { slug: "photo-editor", name: "Photo Editor", emoji: "🖌️", cat: "image", desc: "Crop, rotate, color-correct and filter photos — Photoshop-style edits right in your browser." },
+    { slug: "dither-studio", name: "Dither Studio", emoji: "🎛️", cat: "image", desc: "Dither Boy-style retro dithering — error diffusion, halftones, glitch effects, palettes and SVG vector export." },
     /* Files */
     { slug: "file-hash", name: "File Hash", emoji: "🔐", cat: "files", desc: "Check a file's integrity with SHA-1, SHA-256, SHA-384 or SHA-512 hashes." },
     { slug: "text-merge", name: "Text Merger", emoji: "📚", cat: "files", desc: "Combine several text files into one, with a separator of your choice." },
@@ -197,10 +199,14 @@
       + "</div>";
   }
   function footerHtml() {
+    var replay = document.getElementById("intro-overlay")
+      ? '<button id="replay-intro" type="button" style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(139,92,246,.45);border-radius:999px;padding:6px 16px;font-size:12px;font-weight:600;color:#8b5cf6;cursor:pointer;background:transparent;transition:all .25s ease;">▶ Replay intro</button>'
+      : "";
     return '<div class="mx-auto w-[min(1100px,92%)]">'
       + '<p class="font-semibold text-day-900 dark:text-night-200">🛠️ ToolBox — free tools that run right in your browser.</p>'
       + '<p class="small mt-1">No sign-ups · No ads · No uploads (everything stays on your device)</p>'
       + '<nav class="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">' + navHtml("") + "</nav>"
+      + replay
       + "</div>";
   }
 
@@ -336,7 +342,7 @@
       + "</div>";
 
     var s = document.createElement("script");
-    s.src = b + "js/tools/" + slug + ".js?v=4";
+    s.src = b + "js/tools/" + slug + ".js?v=7";
     s.onload = function () {
       var box = page.querySelector("#tool-box");
       var mod = modules[slug];
@@ -411,6 +417,8 @@
 
     header.innerHTML = headerHtml(active);
     footer.innerHTML = footerHtml();
+    var replayBtn = document.getElementById("replay-intro");
+    if (replayBtn) replayBtn.addEventListener("click", function () { if (window.replayIntro) window.replayIntro(); });
     themeInit();
 
     if (route === "home") renderHome(page);

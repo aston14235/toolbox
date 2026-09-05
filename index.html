@@ -8,11 +8,94 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛠️%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css?v=12">
   <link rel="stylesheet" href="css/tailwind.css?v=1">
+  <style>
+    /* ===== intro overlay ===== */
+    body.intro-lock { overflow: hidden; }
+    #intro-overlay {
+      position: fixed; inset: 0; z-index: 9999; background: #0a0e15;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+      opacity: 1; transition: opacity .8s ease;
+    }
+    #intro-overlay.hide { opacity: 0; pointer-events: none; }
+    #intro-overlay.gone { display: none; }
+    #intro-video { width: 100%; height: 100%; object-fit: cover; }
+    .intro-vignette {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 52%, rgba(4,7,12,.88) 100%);
+    }
+    .intro-brand {
+      position: absolute; left: 18px; bottom: 16px; color: #d3dcea; font-size: .8rem;
+      font-weight: 700; letter-spacing: .06em; opacity: .85; pointer-events: none;
+      text-shadow: 0 1px 8px rgba(0,0,0,.6);
+    }
+    #intro-skip {
+      position: absolute; right: 18px; bottom: 16px;
+      background: rgba(13,18,28,.55); border: 1px solid rgba(139,92,246,.45); color: #e8eef7;
+      font-size: .74rem; font-weight: 600; padding: 8px 16px; border-radius: 999px;
+      cursor: pointer; backdrop-filter: blur(6px); transition: all .25s ease;
+    }
+    #intro-skip:hover { background: rgba(139,92,246,.35); border-color: #8b5cf6; }
+  </style>
 </head>
 <body>
+  <div id="intro-overlay" aria-hidden="true">
+    <video id="intro-video" src="assets/intro.mp4" autoplay muted playsinline preload="auto"></video>
+    <div class="intro-vignette"></div>
+    <span class="intro-brand">🛠️ ToolBox</span>
+    <button id="intro-skip" type="button">Skip intro ⏭</button>
+  </div>
   <header id="site-header" class="sticky top-0 z-50 border-b border-day-200/70 bg-day-50/80 backdrop-blur-md transition-colors duration-300 dark:border-night-600/60 dark:bg-night-950/80"></header>
   <main id="page" data-route="home"></main>
   <footer id="site-footer"></footer>
-  <script src="js/site.js?v=15"></script>
+  <script src="js/site.js?v=18"></script>
+  <script>
+    /* ===== intro playback ===== */
+    (function () {
+      var ov = document.getElementById('intro-overlay');
+      if (!ov) return;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var seen = false;
+      try { seen = sessionStorage.getItem('tb_intro_seen') === '1'; } catch (e) {}
+      function finish() {
+        if (ov.dataset.done) return;
+        ov.dataset.done = '1';
+        ov.classList.add('hide');
+        document.body.classList.remove('intro-lock');
+        setTimeout(function () { ov.classList.add('gone'); }, 900);
+        try { sessionStorage.setItem('tb_intro_seen', '1'); } catch (e) {}
+      }
+      /* replayable from the footer button (defined before any early exit) */
+      window.replayIntro = function () {
+        try { sessionStorage.removeItem('tb_intro_seen'); } catch (e) {}
+        ov.classList.remove('gone', 'hide');
+        ov.dataset.done = '';
+        document.body.classList.add('intro-lock');
+        var v = document.getElementById('intro-video');
+        if (!v.getAttribute('src')) v.src = 'assets/intro.mp4'; /* restore if the skip branch cleared it */
+        v.currentTime = 0;
+        var p = v.play();
+        if (p && p.catch) p.catch(function () {});
+      };
+
+      if (reduce || seen) {
+        ov.classList.add('gone');
+        /* don't keep the hidden video playing in the background */
+        var sv = document.getElementById('intro-video');
+        if (sv) { sv.pause(); sv.removeAttribute('src'); sv.load(); }
+        return;
+      }
+      document.body.classList.add('intro-lock');
+      var v = document.getElementById('intro-video');
+      var started = false;
+      v.addEventListener('playing', function () { started = true; });
+      v.addEventListener('ended', finish);
+      v.addEventListener('error', function () { finish(); });
+      var p = v.play();
+      if (p && p.catch) p.catch(function () { finish(); });
+      /* safety net: never leave the site stuck behind a dead video */
+      setTimeout(function () { if (!started) finish(); }, 3500);
+      document.getElementById('intro-skip').addEventListener('click', finish);
+    })();
+  </script>
 </body>
 </html>
