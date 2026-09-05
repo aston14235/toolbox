@@ -360,6 +360,16 @@
   /* ================= Boot ================= */
   function boot() {
     document.body.classList.add("js");
+    if (!document.querySelector(".bg-orbs")) {
+      document.body.insertAdjacentHTML("afterbegin",
+        '<div class="bg-orbs" aria-hidden="true">'
+        + '<span class="bg-orb bg-orb-a"></span>'
+        + '<span class="bg-orb bg-orb-b"></span>'
+        + '<span class="bg-orb bg-orb-c"></span>'
+        + '<span class="bg-orb bg-orb-d"></span>'
+        + '<span class="bg-orb bg-orb-e"></span>'
+        + "</div>");
+    }
     var header = document.getElementById("site-header");
     var footer = document.getElementById("site-footer");
     var page = document.getElementById("page");

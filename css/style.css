@@ -163,6 +163,72 @@ body.js .reveal.in { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   color: transparent;
 }
 
+/* ===== Ambient background orbs (subtle, slow) ===== */
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+.bg-orb-a {
+  width: 45vw;
+  height: 45vw;
+  top: -12%;
+  left: -8%;
+  background: radial-gradient(circle, rgba(0, 136, 255, 0.14), rgba(0, 136, 255, 0.05) 55%, transparent 72%);
+  animation: orbDriftA 26s ease-in-out infinite alternate;
+}
+.bg-orb-b {
+  width: 40vw;
+  height: 40vw;
+  top: 15%;
+  right: -12%;
+  background: radial-gradient(circle, rgba(56, 182, 255, 0.12), rgba(158, 255, 255, 0.05) 55%, transparent 72%);
+  animation: orbDriftB 32s ease-in-out infinite alternate;
+}
+.bg-orb-c {
+  width: 50vw;
+  height: 50vw;
+  bottom: -18%;
+  left: 10%;
+  background: radial-gradient(circle, rgba(0, 136, 255, 0.12), rgba(0, 82, 163, 0.05) 55%, transparent 72%);
+  animation: orbDriftC 38s ease-in-out infinite alternate;
+}
+.bg-orb-d {
+  width: 32vw;
+  height: 32vw;
+  top: 42%;
+  left: 58%;
+  background: radial-gradient(circle, rgba(158, 255, 255, 0.1), rgba(0, 136, 255, 0.04) 55%, transparent 72%);
+  animation: orbDriftB 29s ease-in-out infinite alternate-reverse;
+}
+.bg-orb-e {
+  width: 26vw;
+  height: 26vw;
+  bottom: 8%;
+  right: 20%;
+  background: radial-gradient(circle, rgba(255, 198, 0, 0.07), rgba(255, 198, 0, 0.02) 55%, transparent 72%);
+  animation: orbDriftA 34s ease-in-out infinite alternate-reverse;
+}
+@keyframes orbDriftA {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(5vw, 4vh) scale(1.1); }
+}
+@keyframes orbDriftB {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-4vw, 6vh) scale(1.08); }
+}
+@keyframes orbDriftC {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(6vw, -5vh) scale(1.12); }
+}
+
 /* Hero ambient glow */
 .hero { position: relative; z-index: 0; }
 .hero::before {
