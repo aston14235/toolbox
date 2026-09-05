@@ -177,19 +177,46 @@ body.js .reveal.in { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
      Animated border-radius repaints every frame, so we only animate
      transform here — that stays on the GPU compositor. */
   will-change: transform;
-  animation: orbWander var(--dur, 18s) ease-in-out infinite var(--dir, alternate);
+  animation: orbWander var(--dur, 18s) infinite var(--dir, alternate);
   animation-delay: var(--delay, -3s);
 }
+/* Three motion personalities — same wander points (fed by CSS vars),
+   different per-step easings so each blob looks like it's deciding where
+   to ooze next. Per-keyframe easing affects only the segment it precedes. */
 @keyframes orbWander {
-  0% { transform: translate(0, 0) scale(1, 1) rotate(0deg); }
-  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) scale(1.07, 0.95) rotate(3deg); }
-  25% { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) scale(0.95, 1.06) rotate(-4deg); }
-  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) scale(1.05, 0.97) rotate(2deg); }
-  50% { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) scale(0.97, 1.07) rotate(-3deg); }
-  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) scale(1.06, 0.96) rotate(4deg); }
-  75% { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) scale(0.94, 1.05) rotate(-2deg); }
-  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) scale(1.04, 0.98) rotate(3deg); }
-  100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) scale(1, 1) rotate(0deg); }
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1, 1); animation-timing-function: ease-in-out; }
+  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) rotate(var(--r1, 3deg)) scale(var(--sx1, 1.06), var(--sy1, 0.95)); animation-timing-function: ease-in-out; }
+  25%  { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) rotate(var(--r2, -4deg)) scale(var(--sx2, 0.95), var(--sy2, 1.06)); animation-timing-function: ease-in-out; }
+  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) rotate(var(--r3, 2deg)) scale(var(--sx3, 1.05), var(--sy3, 0.97)); animation-timing-function: ease-in-out; }
+  50%  { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) rotate(var(--r4, -3deg)) scale(var(--sx4, 0.97), var(--sy4, 1.07)); animation-timing-function: ease-in-out; }
+  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) rotate(var(--r5, 4deg)) scale(var(--sx5, 1.06), var(--sy5, 0.96)); animation-timing-function: ease-in-out; }
+  75%  { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) rotate(var(--r6, -2deg)) scale(var(--sx6, 0.94), var(--sy6, 1.05)); animation-timing-function: ease-in-out; }
+  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) rotate(var(--r7, 3deg)) scale(var(--sx7, 1.04), var(--sy7, 0.98)); animation-timing-function: ease-in-out; }
+  100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) rotate(var(--r8, 0deg)) scale(var(--sx8, 1), var(--sy8, 1)); }
+}
+@keyframes orbWanderB {
+  /* springy — overshoots and lingers, like a blob tasting its next spot */
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1, 1); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
+  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) rotate(var(--r1, 3deg)) scale(var(--sx1, 1.06), var(--sy1, 0.95)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
+  25%  { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) rotate(var(--r2, -4deg)) scale(var(--sx2, 0.95), var(--sy2, 1.06)); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
+  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) rotate(var(--r3, 2deg)) scale(var(--sx3, 1.05), var(--sy3, 0.97)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
+  50%  { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) rotate(var(--r4, -3deg)) scale(var(--sx4, 0.97), var(--sy4, 1.07)); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
+  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) rotate(var(--r5, 4deg)) scale(var(--sx5, 1.06), var(--sy5, 0.96)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
+  75%  { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) rotate(var(--r6, -2deg)) scale(var(--sx6, 0.94), var(--sy6, 1.05)); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
+  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) rotate(var(--r7, 3deg)) scale(var(--sx7, 1.04), var(--sy7, 0.98)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
+  100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) rotate(var(--r8, 0deg)) scale(var(--sx8, 1), var(--sy8, 1)); }
+}
+@keyframes orbWanderC {
+  /* heavy-drip — slow heavy pull down, quick elastic snap up */
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1, 1); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
+  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) rotate(var(--r1, 3deg)) scale(var(--sx1, 1.06), var(--sy1, 0.95)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  25%  { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) rotate(var(--r2, -4deg)) scale(var(--sx2, 0.95), var(--sy2, 1.06)); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
+  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) rotate(var(--r3, 2deg)) scale(var(--sx3, 1.05), var(--sy3, 0.97)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  50%  { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) rotate(var(--r4, -3deg)) scale(var(--sx4, 0.97), var(--sy4, 1.07)); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
+  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) rotate(var(--r5, 4deg)) scale(var(--sx5, 1.06), var(--sy5, 0.96)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  75%  { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) rotate(var(--r6, -2deg)) scale(var(--sx6, 0.94), var(--sy6, 1.05)); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
+  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) rotate(var(--r7, 3deg)) scale(var(--sx7, 1.04), var(--sy7, 0.98)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) rotate(var(--r8, 0deg)) scale(var(--sx8, 1), var(--sy8, 1)); }
 }
 
 /* Hero ambient glow */

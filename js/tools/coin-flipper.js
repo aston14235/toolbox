@@ -10,7 +10,6 @@ ToolBox.define("coin-flipper", {
       + '<div class="stat"><div class="num" id="flips">0</div><div class="label">Total flips</div></div>'
       + '<div class="stat"><div class="num" id="heads">0</div><div class="label">Heads</div></div>'
       + '<div class="stat"><div class="num" id="tails">0</div><div class="label">Tails</div></div>'
-      + '<div class="stat"><div class="num" id="pct">—</div><div class="label">Heads %</div></div>'
       + "</div></div>";
 
     var coinEl = box.querySelector("#coin");
@@ -20,19 +19,24 @@ ToolBox.define("coin-flipper", {
 
     function updateStats() {
       box.querySelector("#flips").textContent = flips;
-      box.querySelector("#heads").textContent = heads;
-      box.querySelector("#tails").textContent = tails;
-      box.querySelector("#pct").textContent = flips ? Math.round(heads / flips * 100) + "%" : "—";
+      box.querySelector("#heads").textContent = heads + (flips ? " (" + Math.round(heads / flips * 100) + "%)" : "");
+      box.querySelector("#tails").textContent = tails + (flips ? " (" + Math.round(tails / flips * 100) + "%)" : "");
     }
 
+    // Keep a reference to the animation — an unreferenced Animation from
+    // element.animate() can be garbage-collected mid-flight, and then its
+    // onfinish never fires (flips silently stall). Drive the state update from
+    // a timeout instead so the flip ALWAYS completes.
+    var currentAnim = null;
     box.querySelector("#flip").addEventListener("click", function () {
       if (flipping) return;
       flipping = true;
       var isHeads = Math.random() < 0.5;
-      coinEl.animate(
+      currentAnim = coinEl.animate(
         [{ transform: "rotateY(0deg)" }, { transform: "rotateY(1440deg)" }],
         { duration: 700, easing: "ease-out" }
-      ).onfinish = function () {
+      );
+      setTimeout(function () {
         coinEl.classList.toggle("tails", !isHeads);
         coinEl.textContent = isHeads ? "H" : "T";
         resultEl.textContent = isHeads ? "🦅 Heads!" : "🪙 Tails!";
@@ -40,7 +44,7 @@ ToolBox.define("coin-flipper", {
         if (isHeads) heads++; else tails++;
         updateStats();
         flipping = false;
-      };
+      }, 700);
     });
     updateStats();
   }

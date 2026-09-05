@@ -245,10 +245,16 @@ ToolBox.define("dither-studio", {
       var base = PALETTES[ACTIVE_PAL_NAME] || PALETTES["B&W"];
       return base.concat(customColors);
     }
-    function nearestIdx(r, g, b, pal) {
+    /* Precompute the palette once per render — the old code re-parsed hex
+       strings and allocated arrays for every palette entry on every pixel
+       (tens of millions of allocations per render). */
+    function cachePalette(pal) {
+      return pal.map(function (h) { return hexToRgb(h); });
+    }
+    function nearestIdx(r, g, b, palRgb) {
       var best = 0, bd = Infinity;
-      for (var i = 0; i < pal.length; i++) {
-        var c = hexToRgb(pal[i]);
+      for (var i = 0; i < palRgb.length; i++) {
+        var c = palRgb[i];
         var dr = r - c[0], dg = g - c[1], db = b - c[2];
         var d = dr * dr + dg * dg + db * db;
         if (d < bd) { bd = d; best = i; }
@@ -278,29 +284,32 @@ ToolBox.define("dither-studio", {
       "sierra-lite": { m: [[0, 0, 2], [1, 1, 0]], div: 4 },
       stevenson: { m: [[0, 0, 0, 0, 0, 0, 32], [0, 0, 0, 0, 0, 32, 0], [0, 0, 0, 0, 32, 0, 0], [0, 0, 32, 0, 0, 0, 0], [2, 4, 8, 4, 2, 0, 0]], div: 84 }
     };
-    function applyDiffusion(d, W, H, pal, algo, strength) {
+    function applyDiffusion(d, W, H, palRgb, algo, strength) {
       var spec = DIFFUSION[algo];
       var m = spec.m, div = spec.div;
-      var er = strength / 100;
-      var n = W * H;
+      var erDiv = (strength / 100) / div;
       for (var y = 0; y < H; y++) {
         var rowStart = y * W;
+        var odd = (y & 1) === 1;
+        var dir = odd ? -1 : 1;
+        var colOffsets = new Array(m.length);
+        for (var ryi = 0; ryi < m.length; ryi++) colOffsets[ryi] = dir * (Math.floor(m[ryi].length / 2) - 1);
         for (var xi = 0; xi < W; xi++) {
-          var x = (y % 2 === 1) ? (W - 1 - xi) : xi;
+          var x = odd ? (W - 1 - xi) : xi;
           var i = (rowStart + x) * 4;
-          var idx = nearestIdx(d[i], d[i + 1], d[i + 2], pal);
-          var c = hexToRgb(pal[idx]);
-          var e0 = (d[i] - c[0]) * er / div;
-          var e1 = (d[i + 1] - c[1]) * er / div;
-          var e2 = (d[i + 2] - c[2]) * er / div;
+          var idx = nearestIdx(d[i], d[i + 1], d[i + 2], palRgb);
+          var c = palRgb[idx];
+          var e0 = (d[i] - c[0]) * erDiv;
+          var e1 = (d[i + 1] - c[1]) * erDiv;
+          var e2 = (d[i + 2] - c[2]) * erDiv;
           d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2];
           for (var ry = 0; ry < m.length; ry++) {
             var ny = y + ry;
             if (ny >= H) continue;
-            var dir = (y % 2 === 1) ? -1 : 1;
-            var colOffset = dir * (Math.floor(m[ry].length / 2) - 1);
-            for (var rx = 0; rx < m[ry].length; rx++) {
-              var wgt = m[ry][rx];
+            var rowm = m[ry];
+            var colOffset = colOffsets[ry];
+            for (var rx = 0; rx < rowm.length; rx++) {
+              var wgt = rowm[rx];
               if (!wgt) continue;
               var nx = x + dir * (rx - colOffset);
               if (nx < 0 || nx >= W) continue;
@@ -325,18 +334,19 @@ ToolBox.define("dither-studio", {
       }
       return m;
     }
-    function applyOrdered(d, W, H, pal, n, strength) {
+    function applyOrdered(d, W, H, palRgb, n, strength) {
       var m = bayer(n);
       var size = n * n;
-      var lo = hexToRgb(pal[0]), hi = hexToRgb(pal[pal.length - 1]);
-      if (palLum(pal[0]) > palLum(pal[pal.length - 1])) { var t = lo; lo = hi; hi = t; }
+      var lo = palRgb[0], hi = palRgb[palRgb.length - 1];
+      if (lumOf(lo) > lumOf(hi)) { var t = lo; lo = hi; hi = t; }
       var amt = strength / 100;
       for (var y = 0; y < H; y++) {
+        var yOff = (y % n) * n;
         for (var x = 0; x < W; x++) {
           var i = (y * W + x) * 4;
-          var th = (m[(y % n) * n + (x % n)] + 0.5) / size - 0.5;
+          var th = (m[yOff + (x % n)] + 0.5) / size - 0.5;
           var lum = luminance(d, i) / 255;
-          if (pal.length === 2) {
+          if (palRgb.length === 2) {
             var v = lum + th * amt * 2;
             if (v > 0.5) { d[i] = hi[0]; d[i + 1] = hi[1]; d[i + 2] = hi[2]; }
             else { d[i] = lo[0]; d[i + 1] = lo[1]; d[i + 2] = lo[2]; }
@@ -344,13 +354,14 @@ ToolBox.define("dither-studio", {
             var rr = d[i] + th * amt * 255;
             var gg = d[i + 1] + th * amt * 255;
             var bb = d[i + 2] + th * amt * 255;
-            var idx = nearestIdx(rr, gg, bb, pal);
-            var c = hexToRgb(pal[idx]);
+            var idx = nearestIdx(rr, gg, bb, palRgb);
+            var c = palRgb[idx];
             d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2];
           }
         }
       }
     }
+    function lumOf(c) { return 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]; }
     /* pattern threshold tables (normalized to 0..1), N x N */
     var PATTERN_MATS = {
       dots: { n: 6, m: [35, 13, 6, 10, 18, 30, 25, 4, 1, 3, 2, 22, 9, 33, 29, 31, 34, 12, 16, 23, 27, 32, 26, 20, 15, 21, 36, 35, 24, 14, 28, 8, 5, 11, 7, 17] },
@@ -359,27 +370,28 @@ ToolBox.define("dither-studio", {
       crosshatch: { n: 4, m: [0, 8, 0, 8, 8, 0, 8, 0, 0, 8, 0, 8, 8, 0, 8, 0] },
       circles: { n: 4, m: [12, 6, 6, 12, 6, 0, 0, 6, 6, 0, 0, 6, 12, 6, 6, 12] }
     };
-    function applyPattern(d, W, H, pal, pat, strength) {
+    function applyPattern(d, W, H, palRgb, pat, strength) {
       var p = PATTERN_MATS[pat];
       var n = p.n;
       var max = 16;
-      var lo = hexToRgb(pal[0]), hi = hexToRgb(pal[pal.length - 1]);
-      if (palLum(pal[0]) > palLum(pal[pal.length - 1])) { var t = lo; lo = hi; hi = t; }
+      var lo = palRgb[0], hi = palRgb[palRgb.length - 1];
+      if (lumOf(lo) > lumOf(hi)) { var t = lo; lo = hi; hi = t; }
       var amt = 0.5 + strength / 100;
       for (var y = 0; y < H; y++) {
+        var yOff = (y % n) * n;
         for (var x = 0; x < W; x++) {
           var i = (y * W + x) * 4;
           var lum = luminance(d, i) / 255;
-          var th = p.m[(y % n) * n + (x % n)] / max;
+          var th = p.m[yOff + (x % n)] / max;
           var v = lum + (th - 0.5) * amt * 2;
           if (v > 0.5) { d[i] = hi[0]; d[i + 1] = hi[1]; d[i + 2] = hi[2]; }
           else { d[i] = lo[0]; d[i + 1] = lo[1]; d[i + 2] = lo[2]; }
         }
       }
     }
-    function applyHalftone(canvas, size, angleDeg, strength, pal) {
+    function applyHalftone(canvas, size, angleDeg, strength, palRgb) {
       var w = canvas.width, h = canvas.height;
-      var ctx0 = canvas.getContext("2d");
+      var ctx0 = canvas.getContext("2d", { willReadFrequently: true });
       var src = ctx0.getImageData(0, 0, w, h);
       var out = document.createElement("canvas"); out.width = w; out.height = h;
       var octx = out.getContext("2d");
@@ -387,8 +399,8 @@ ToolBox.define("dither-studio", {
       var rad = angleDeg * Math.PI / 180;
       var cos = Math.cos(rad), sin = Math.sin(rad);
       var half = size / 2;
-      var dark = hexToRgb(pal[pal.length - 1]);
-      if (palLum(pal[pal.length - 1]) > palLum(pal[0])) dark = hexToRgb(pal[0]);
+      var dark = palRgb[palRgb.length - 1];
+      if (lumOf(palRgb[palRgb.length - 1]) > lumOf(palRgb[0])) dark = palRgb[0];
       var boost = 0.55 + (strength / 100) * 0.9;
       for (var cy = half; cy < h + half; cy += size) {
         for (var cx = half; cx < w + half; cx += size) {
@@ -586,38 +598,37 @@ ToolBox.define("dither-studio", {
       var H = Math.max(1, Math.round(H0 * scaleF));
       var canvas = document.createElement("canvas");
       canvas.width = W; canvas.height = H;
-      var ctx = canvas.getContext("2d");
+      var ctx = canvas.getContext("2d", { willReadFrequently: true });
       ctx.drawImage(img, 0, 0, W, H);
       var algo = state.algo;
       var pal = activePalette();
+      var palRgb = cachePalette(pal);
       var strength = state.strength;
 
       if (algo === "halftone" || algo === "halftone-bw") {
         var s = state.scale;
         if (algo === "halftone-bw") s = Math.max(4, Math.round(s * 0.5));
-        applyHalftone(canvas, s, state.angle, strength, pal);
+        applyHalftone(canvas, s, state.angle, strength, palRgb);
       } else {
         var d = ctx.getImageData(0, 0, W, H).data;
         if (DIFFUSION[algo]) {
-          applyDiffusion(d, W, H, pal, algo, strength);
+          applyDiffusion(d, W, H, palRgb, algo, strength);
         } else if (algo.indexOf("bayer") === 0) {
-          applyOrdered(d, W, H, pal, Number(algo.slice(5)) || 4, strength);
+          applyOrdered(d, W, H, palRgb, Number(algo.slice(5)) || 4, strength);
         } else if (PATTERN_MATS[algo]) {
-          applyPattern(d, W, H, pal, algo, strength);
+          applyPattern(d, W, H, palRgb, algo, strength);
         } else if (algo === "noise") {
+          var lo = palRgb[0], hi = palRgb[palRgb.length - 1];
+          if (lumOf(hi) < lumOf(lo)) { var t2 = lo; lo = hi; hi = t2; }
           for (var i = 0; i < W * H * 4; i += 4) {
             var th = 0.5 + (Math.random() - 0.5) * (strength / 50);
             var lum = luminance(d, i) / 255;
-            var c2 = lum > th ? hexToRgb(pal[pal.length - 1]) : hexToRgb(pal[0]);
-            if (palLum(pal[pal.length - 1]) < palLum(pal[0])) c2 = lum > th ? hexToRgb(pal[0]) : hexToRgb(pal[pal.length - 1]);
+            var c2 = lum > th ? hi : lo;
             d[i] = c2[0]; d[i + 1] = c2[1]; d[i + 2] = c2[2];
           }
         } else if (algo === "posterize") {
-          var steps = Math.max(2, Math.round(strength / 100 * 14) + 2);
-          var step = 255 / (steps - 1);
           for (var i2 = 0; i2 < W * H * 4; i2 += 4) {
-            var idx = nearestIdx(d[i2], d[i2 + 1], d[i2 + 2], pal);
-            var c3 = hexToRgb(pal[idx]);
+            var c3 = palRgb[nearestIdx(d[i2], d[i2 + 1], d[i2 + 2], palRgb)];
             d[i2] = c3[0]; d[i2 + 1] = c3[1]; d[i2 + 2] = c3[2];
           }
         } else if (algo === "glitch-crush") {
@@ -632,8 +643,7 @@ ToolBox.define("dither-studio", {
                 }
               }
               if (!cnt) continue;
-              var idx2 = nearestIdx(sum[0] / cnt, sum[1] / cnt, sum[2] / cnt, pal);
-              var c4 = hexToRgb(pal[idx2]);
+              var c4 = palRgb[nearestIdx(sum[0] / cnt, sum[1] / cnt, sum[2] / cnt, palRgb)];
               for (var dy2 = 0; dy2 < bs && y + dy2 < H; dy2++) {
                 for (var dx2 = 0; dx2 < bs && x + dx2 < W; dx2++) {
                   var j2 = ((y + dy2) * W + (x + dx2)) * 4;
@@ -655,12 +665,11 @@ ToolBox.define("dither-studio", {
         } else {
           /* fallback: plain nearest-color */
           for (var i4 = 0; i4 < W * H * 4; i4 += 4) {
-            var idx3 = nearestIdx(d[i4], d[i4 + 1], d[i4 + 2], pal);
-            var c5 = hexToRgb(pal[idx3]);
+            var c5 = palRgb[nearestIdx(d[i4], d[i4 + 1], d[i4 + 2], palRgb)];
             d[i4] = c5[0]; d[i4 + 1] = c5[1]; d[i4 + 2] = c5[2];
           }
         }
-        ctx.putImageData(new ImageData(new Uint8ClampedArray(d), W, H), 0, 0);
+        ctx.putImageData(new ImageData(d, W, H), 0, 0);
       }
 
       /* effects stack */
@@ -920,9 +929,10 @@ ToolBox.define("dither-studio", {
     /* ================= export ================= */
     function toSVG(canvas) {
       var W = canvas.width, H = canvas.height;
-      var ctx = canvas.getContext("2d");
+      var ctx = canvas.getContext("2d", { willReadFrequently: true });
       var d = ctx.getImageData(0, 0, W, H).data;
       var pal = activePalette();
+      var palRgb = cachePalette(pal);
       var groups = [];
       for (var c = 0; c < pal.length; c++) {
         var runs = [];
@@ -930,7 +940,7 @@ ToolBox.define("dither-studio", {
           var start = -1;
           for (var x = 0; x < W; x++) {
             var i = (y * W + x) * 4;
-            var idx = nearestIdx(d[i], d[i + 1], d[i + 2], pal);
+            var idx = nearestIdx(d[i], d[i + 1], d[i + 2], palRgb);
             if (idx === c && start < 0) start = x;
             if (idx !== c && start >= 0) { runs.push([start, y, x - start]); start = -1; }
           }

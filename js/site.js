@@ -5,31 +5,31 @@
   var CATS = [
     { slug: "writing", name: "Writing", emoji: "✍️",
       desc: "Words are your thing? Edit, convert and count them — all in your browser, all private.",
-      planned: ["Sentiment Analyzer", "Rhyme Finder", "Anagram Generator"] },
+      planned: [] },
     { slug: "developer", name: "Developer", emoji: "💻",
       desc: "The little utilities every developer ends up needing — JSON, regex, generators and more.",
-      planned: ["JavaScript Minifier", "Cron Expression Generator", "Meta Tag Generator", "User Agent Parser", "SQL Query Formatter"] },
+      planned: [] },
     { slug: "drawing", name: "Drawing", emoji: "🎨",
       desc: "Sketch, doodle and export — no art supplies required.",
       planned: [] },
     { slug: "image", name: "Image & Design", emoji: "🖼️",
       desc: "From resizing to color picking — your images never leave your device.",
-      planned: ["Image Cropper", "QR Code Generator", "Background Remover", "Image Watermarker", "Blur Image Tool", "Favicon Converter", "SVG Optimizer", "GIF Maker", "Mockup Generator"] },
+      planned: [] },
     { slug: "files", name: "Files", emoji: "📁",
       desc: "Merge, convert and hash files without uploading them anywhere.",
-      planned: ["PDF Merger", "PDF Splitter", "PDF to Word", "Word to PDF", "Excel to CSV", "ZIP / Unzip", "PDF to JPG", "HEIC to JPG", "Subtitle Extractor", "MP3 to MP4", "Video to MP3"] },
+      planned: ["PDF to Word", "Word to PDF", "PDF to JPG", "HEIC to JPG", "Subtitle Extractor", "MP3 to MP4", "Video to MP3"] },
     { slug: "math", name: "Math & Science", emoji: "🧮",
       desc: "Fast answers for everyday math — tips, percentages, BMI and more.",
-      planned: ["Loan Calculator", "Calorie Counter (BMR)", "Fuel Cost Calculator", "Day Counter", "Time Zone Converter", "Currency Converter", "Mortgage Amortization"] },
+      planned: [] },
     { slug: "productivity", name: "Productivity", emoji: "⏱️",
       desc: "Stay on track with timers, checklists and small planning helpers.",
-      planned: ["Meeting Agenda Builder", "Travel Itinerary Planner", "Recipe Divider", "Baby Name Generator", "Paint Color Calculator", "Retirement Calculator"] },
+      planned: [] },
     { slug: "security", name: "Security", emoji: "🔒",
       desc: "Small tools that help you lock things down and sleep easier.",
-      planned: ["IP Address Lookup", "DNS Lookup", "SSL Checker", "Privacy Policy Generator", "Terms of Service Generator", "Data Breach Checker", "Secure File Shredder"] },
+      planned: ["SSL Checker", "Secure File Shredder"] },
     { slug: "fun", name: "Fun & Misc", emoji: "🎲",
       desc: "For the not-so-serious stuff: dice, names, riddles and coin flips.",
-      planned: ["Meme Maker"] }
+      planned: [] }
   ];
 
   /* ================= Built tools ================= */
@@ -48,6 +48,9 @@
     { slug: "slug-generator", name: "Slug Generator", emoji: "🏷️", cat: "writing", desc: "Turn any headline into a tidy, URL-safe slug." },
     { slug: "stop-word-filter", name: "Stop Word Filter", emoji: "🧹", cat: "writing", desc: "Drop filler words like \"the\", \"and\" and \"is\" from text or lists." },
     { slug: "paragraph-spacing", name: "Paragraph Spacing Adjuster", emoji: "📏", cat: "writing", desc: "Fix cramped or double-spaced paragraphs in one click." },
+    { slug: "sentiment-analyzer", name: "Sentiment Analyzer", emoji: "💭", cat: "writing", desc: "Is that review happy or angry? Score any text, sentence by sentence." },
+    { slug: "rhyme-finder", name: "Rhyme Finder", emoji: "🎤", cat: "writing", desc: "Find rhyming words for your lyrics, poems and puns." },
+    { slug: "anagram-generator", name: "Anagram Generator", emoji: "🔀", cat: "writing", desc: "Rearrange any word or phrase into its hidden anagrams — one and two words." },
     /* Developer */
     { slug: "json-formatter", name: "JSON Formatter & Validator", emoji: "🧩", cat: "developer", desc: "Make JSON readable, compact — or confirm it's actually valid." },
     { slug: "password-generator", name: "Password Generator", emoji: "🗝️", cat: "developer", desc: "Roll your own strong passwords — length, symbols and all." },
@@ -59,6 +62,11 @@
     { slug: "html-entity", name: "HTML Entity Encoder", emoji: "&amp;", cat: "developer", desc: "Turn tricky characters into HTML entities (and back) without the headache." },
     { slug: "base64-encoder", name: "Base64 Encoder/Decoder", emoji: "🔤", cat: "developer", desc: "Encode text or files to Base64 — and decode it right back." },
     { slug: "css-minifier", name: "CSS Minifier", emoji: "⚡", cat: "developer", desc: "Shrink your CSS so pages load a little faster." },
+    { slug: "meta-tag-generator", name: "Meta Tag Generator", emoji: "🏷️", cat: "developer", desc: "Build SEO + social share meta tags (Open Graph, Twitter) and copy them straight into your page." },
+    { slug: "js-minifier", name: "JavaScript Minifier", emoji: "⚡", cat: "developer", desc: "Shrink JS by stripping comments and whitespace — strings and templates stay safe." },
+    { slug: "cron-generator", name: "Cron Expression Generator", emoji: "⏰", cat: "developer", desc: "Build cron expressions from presets, see the next 5 run times, copy the result." },
+    { slug: "user-agent-parser", name: "User Agent Parser", emoji: "🤖", cat: "developer", desc: "Decode any user-agent string — browser, version, engine, OS and device." },
+    { slug: "sql-formatter", name: "SQL Formatter", emoji: "🗄️", cat: "developer", desc: "Turn one-line SQL into a readable, indented query." },
     /* Drawing */
     { slug: "whiteboard", name: "Whiteboard", emoji: "🎨", cat: "drawing", desc: "Doodle with brushes and colors, erase freely, undo mistakes — save as PNG." },
     { slug: "pixel-art", name: "Pixel Art", emoji: "🧩", cat: "drawing", desc: "Channel the 8-bit era — paint pixel by pixel and download your masterpiece." },
@@ -74,6 +82,15 @@
     { slug: "image-to-ascii", name: "Image to ASCII", emoji: "🔤", cat: "image", desc: "Turn a photo into glorious text art." },
     { slug: "photo-editor", name: "Photo Editor", emoji: "🖌️", cat: "image", desc: "Crop, rotate, color-correct and filter photos — Photoshop-style edits right in your browser." },
     { slug: "dither-studio", name: "Dither Studio", emoji: "🎛️", cat: "image", desc: "Dither Boy-style retro dithering — error diffusion, halftones, glitch effects, palettes and SVG vector export." },
+    { slug: "image-cropper", name: "Image Cropper", emoji: "✂️", cat: "image", desc: "Crop any image with aspect-ratio presets — 1:1, 4:3, 16:9, story mode." },
+    { slug: "qr-generator", name: "QR Code Generator", emoji: "🔳", cat: "image", desc: "Generate scannable QR codes from any text or URL — offline, in your browser." },
+    { slug: "background-remover", name: "Background Remover", emoji: "🪄", cat: "image", desc: "Magic-wand style removal — click a pixel and its region goes transparent." },
+    { slug: "image-watermarker", name: "Image Watermarker", emoji: "💧", cat: "image", desc: "Stamp text on your photos — position, size, opacity and rotation." },
+    { slug: "blur-image", name: "Blur Image Tool", emoji: "🌫️", cat: "image", desc: "Blur or pixelate any image — great for hiding sensitive details." },
+    { slug: "favicon-converter", name: "Favicon Converter", emoji: "🌟", cat: "image", desc: "Turn any image into a full .ico with 16/32/48/64px sizes built in." },
+    { slug: "svg-optimizer", name: "SVG Optimizer", emoji: "🧹", cat: "image", desc: "Strip comments and whitespace to shrink SVG files for the web." },
+    { slug: "gif-maker", name: "GIF Maker", emoji: "🎞️", cat: "image", desc: "Turn several images into an animated GIF — delay, loop count, everything." },
+    { slug: "mockup-generator", name: "Mockup Generator", emoji: "🖥️", cat: "image", desc: "Put your screenshot inside a phone or laptop frame for a pro presentation." },
     /* Files */
     { slug: "file-hash", name: "File Hash", emoji: "🔐", cat: "files", desc: "Check a file's integrity with SHA-1, SHA-256, SHA-384 or SHA-512 hashes." },
     { slug: "text-merge", name: "Text Merger", emoji: "📚", cat: "files", desc: "Combine several text files into one, with a separator of your choice." },
@@ -82,6 +99,10 @@
     { slug: "text-file-splitter", name: "Text File Splitter", emoji: "✂️", cat: "files", desc: "Slice a big text file into parts by line count or size, then download them all." },
     { slug: "csv-json", name: "CSV ↔ JSON Converter", emoji: "🔄", cat: "files", desc: "Flip between CSV and JSON in both directions — quote-aware parsing built in." },
     { slug: "file-renamer", name: "Bulk File Renamer", emoji: "🏷️", cat: "files", desc: "Rename a whole folder of files with one pattern — index, date, name and more." },
+    { slug: "zip-unzip", name: "ZIP / Unzip", emoji: "📦", cat: "files", desc: "Bundle files into a ZIP or extract any archive — compression happens right here." },
+    { slug: "excel-to-csv", name: "Excel to CSV", emoji: "📊", cat: "files", desc: "Convert .xlsx spreadsheets to CSV without uploading them anywhere." },
+    { slug: "pdf-merger", name: "PDF Merger", emoji: "🔗", cat: "files", desc: "Combine several PDFs into one document — all in your browser." },
+    { slug: "pdf-splitter", name: "PDF Splitter", emoji: "✂️", cat: "files", desc: "Extract any page or split a PDF into one file per page." },
     /* Math & Science */
     { slug: "percentage", name: "Percentage Calculator", emoji: "💯", cat: "math", desc: "What's X% of Y? What percent is X of Y? How much did it change? All answered here." },
     { slug: "bmi", name: "BMI Calculator", emoji: "⚖️", cat: "math", desc: "Your BMI in seconds, plus where it lands on the healthy scale." },
@@ -91,6 +112,13 @@
     { slug: "scientific-calculator", name: "Scientific Calculator", emoji: "🧮", cat: "math", desc: "Trig, logs, roots and powers — with full keyboard support." },
     { slug: "age-calculator", name: "Age Calculator", emoji: "🎂", cat: "math", desc: "Your exact age down to the day, and when the next birthday arrives." },
     { slug: "discount-calculator", name: "Discount Calculator", emoji: "🏷️", cat: "math", desc: "See what a sale actually saves you before you hit buy." },
+    { slug: "day-counter", name: "Day Counter", emoji: "📆", cat: "math", desc: "Days, weeks and working days between any two dates." },
+    { slug: "time-zone-converter", name: "Time Zone Converter", emoji: "🌍", cat: "math", desc: "See the same moment in two time zones at once — every zone on Earth." },
+    { slug: "loan-calculator", name: "Loan Calculator", emoji: "💳", cat: "math", desc: "Monthly payments, total interest and how much an extra payment saves you." },
+    { slug: "mortgage-amortization", name: "Mortgage Amortization", emoji: "🏠", cat: "math", desc: "Full payment-by-payment schedule — principal, interest and balance for every month." },
+    { slug: "fuel-cost-calculator", name: "Fuel Cost Calculator", emoji: "⛽", cat: "math", desc: "How much that road trip costs — metric or imperial, at any fuel price." },
+    { slug: "bmr-calculator", name: "Calorie Calculator (BMR)", emoji: "🔥", cat: "math", desc: "Your basal metabolic rate and daily calories for any activity level." },
+    { slug: "currency-converter", name: "Currency Converter", emoji: "💱", cat: "math", desc: "Live exchange rates for 160+ currencies, cached for offline reuse." },
     { slug: "prime-checker", name: "Prime Number Checker", emoji: "🔢", cat: "math", desc: "Prime or not? Get the verdict, the factors, and the neighbors." },
     /* Productivity */
     { slug: "pomodoro", name: "Pomodoro Timer", emoji: "🍅", cat: "productivity", desc: "Classic 25-minute focus sprints with built-in breaks." },
@@ -98,17 +126,29 @@
     { slug: "stopwatch", name: "Stopwatch", emoji: "⏱️", cat: "productivity", desc: "Precision timing with laps and splits — for workouts, cooking or speedruns." },
     { slug: "habit-tracker", name: "Habit Tracker", emoji: "📅", cat: "productivity", desc: "Check off habits day by day and watch your streak grow — saved in your browser." },
     { slug: "typing-speed", name: "Typing Speed Test", emoji: "⌨️", cat: "productivity", desc: "Measure your words per minute and accuracy on a live typing test." },
+    { slug: "recipe-divider", name: "Recipe Divider", emoji: "🍳", cat: "productivity", desc: "Scale any recipe up or down — paste ingredients, pick a factor, done." },
+    { slug: "baby-name-generator", name: "Baby Name Generator", emoji: "👶", cat: "productivity", desc: "Fresh name ideas by vibe — classic, modern, nature, strong and more." },
+    { slug: "paint-color-calculator", name: "Paint Color Calculator", emoji: "🪣", cat: "productivity", desc: "Exactly how much paint that room needs — walls, ceiling, doors and coats included." },
+    { slug: "retirement-calculator", name: "Retirement Calculator", emoji: "🏖️", cat: "productivity", desc: "Project your nest egg, safe withdrawal rate and whether you’ll cover your spending." },
+    { slug: "meeting-agenda-builder", name: "Meeting Agenda Builder", emoji: "📋", cat: "productivity", desc: "Build a clean meeting agenda with timed items, attendees and notes — copy or download." },
+    { slug: "travel-itinerary-planner", name: "Travel Itinerary Planner", emoji: "🧳", cat: "productivity", desc: "Plan day-by-day trips and export a neat itinerary." },
     /* Security */
     { slug: "password-strength", name: "Password Strength Tester", emoji: "🛡️", cat: "security", desc: "Find out how long a cracker would need — and how to make it longer." },
     { slug: "email-mask", name: "Email Mask Generator", emoji: "🎭", cat: "security", desc: "Generate throwaway email aliases so your real inbox stays private." },
     { slug: "text-encryptor", name: "Text Encryptor", emoji: "🔐", cat: "security", desc: "Scramble text with AES-256-GCM and a passphrase — decrypt it right back, offline." },
     { slug: "backup-codes", name: "Backup Codes Generator", emoji: "🎟️", cat: "security", desc: "Roll one-time recovery codes for 2FA — copy them all or download as a file." },
     { slug: "cookie-banner", name: "Cookie Banner Generator", emoji: "🍪", cat: "security", desc: "Generate a ready-to-paste cookie-consent banner with your message, buttons and color." },
+    { slug: "privacy-policy-generator", name: "Privacy Policy Generator", emoji: "📜", cat: "security", desc: "A solid privacy policy for your site in seconds — GDPR section included." },
+    { slug: "terms-of-service-generator", name: "Terms of Service Generator", emoji: "📄", cat: "security", desc: "Generate a clear ToS with billing, liability and jurisdiction sections." },
+    { slug: "ip-lookup", name: "IP Address Lookup", emoji: "📍", cat: "security", desc: "Find your public IP and its location, ISP and timezone." },
+    { slug: "dns-lookup", name: "DNS Lookup", emoji: "🌐", cat: "security", desc: "Query A, AAAA, MX, TXT, NS and CNAME records via DNS-over-HTTPS." },
+    { slug: "data-breach-checker", name: "Data Breach Checker", emoji: "🕵️", cat: "security", desc: "Check if your email appears in known breaches — k-anonymity keeps it private." },
     /* Fun */
     { slug: "name-picker", name: "Random Name Picker", emoji: "🎯", cat: "fun", desc: "Who's the winner? Drop in names and find out." },
     { slug: "dice-roller", name: "Dice Roller", emoji: "🎲", cat: "fun", desc: "Roll one die or ten, with any number of sides." },
     { slug: "riddle-generator", name: "Riddle Generator", emoji: "🤔", cat: "fun", desc: "Random brain teasers — spoil the answer only when you're ready." },
-    { slug: "coin-flipper", name: "Coin Flipper", emoji: "🪙", cat: "fun", desc: "Settle it old-school — heads or tails, with a satisfying flip." }
+    { slug: "coin-flipper", name: "Coin Flipper", emoji: "🪙", cat: "fun", desc: "Settle it old-school — heads or tails, with a satisfying flip." },
+    { slug: "meme-maker", name: "Meme Maker", emoji: "😂", cat: "fun", desc: "Drop an image, add classic top &amp; bottom text, download your meme." }
   ];
 
   /* ================= Utilities ================= */
@@ -345,7 +385,7 @@
       + "</div>";
 
     var s = document.createElement("script");
-    s.src = b + "js/tools/" + slug + ".js?v=9";
+    s.src = b + "js/tools/" + slug + ".js?v=16";
     s.onload = function () {
       var box = page.querySelector("#tool-box");
       var mod = modules[slug];
@@ -366,39 +406,57 @@
     page.appendChild(s);
   }
 
-  /* ================= Ambient background orbs ================= */
+  /* ================= Ambient background orbs (living goo) =================
+     Each orb wanders along 8 random points. Per-step translate, rotate and
+     stretch are encoded as CSS vars, so the whole motion stays on the GPU
+     compositor (transform-only, zero per-frame repaints). "Goo physics":
+     when a step drifts downward (dragging on the floor) the blob squashes
+     vertically and stretches horizontally — conservation of goo. Three
+     animation personalities (smooth / springy / heavy-drip) give each orb
+     its own "deciding where to go" rhythm. */
   function spawnOrbs() {
     var BLUE = { rgb: "0, 136, 255", a: 0.16 };
     var YELLOW = { rgb: "255, 198, 0", a: 0.1 };
-    var COUNT = 30;
+    var COUNT = 36;
+    var ANIMS = ["orbWander", "orbWanderB", "orbWanderC"];
+    var DIRS = ["alternate", "alternate-reverse", "normal", "reverse"];
     var html = '<div class="bg-orbs" aria-hidden="true">';
     for (var i = 0; i < COUNT; i++) {
       var c = Math.random() < 0.6 ? BLUE : YELLOW; // 60/40 blue/yellow, random each blob
-      var size = Math.round(60 + Math.random() * 100); // 60-160px
+      var a = (c.a * (0.55 + Math.random() * 0.9)).toFixed(3); // per-blob opacity
+      var size = Math.round(50 + Math.random() * 100); // 50-150px — searchbar glow scale
       var x = Math.random() * 100;
       var y = Math.random() * 100;
-      var dur = (10 + Math.random() * 20).toFixed(1); // 10-30s each
-      var delay = (-Math.random() * 30).toFixed(1);   // desync
-      var m = Math.round(30 + Math.random() * 100);   // wander radius 30-130px
-      var w = function () { return Math.round((Math.random() * 2 - 1) * m); };
-      var dir = Math.random() < 0.5 ? "alternate" : "alternate-reverse";
+      var dur = (12 + Math.random() * 30).toFixed(1); // 12-42s each
+      var delay = (-Math.random() * 40).toFixed(1);   // desync
+      var m = Math.round(30 + Math.random() * 110);   // wander radius 30-140px
+      var blur = Math.random() < 0.75 ? Math.round(6 + Math.random() * 10) : 0; // 75% get a soft melt blur
+      // Goo points: x is symmetric, y drifts downward ~65% of the time so the
+      // blob feels heavy and "drags" along the floor of the screen.
+      var pts = [];
+      for (var p = 0; p < 8; p++) {
+        var dx = Math.round((Math.random() * 2 - 1) * m);
+        var dy = Math.round((Math.random() * 1.7 - 0.35) * m); // bias: +0.35 mean down
+        var rot = Math.round((Math.random() * 2 - 1) * 7);     // -7..7deg
+        var sy = 0.9 + Math.random() * 0.22;                   // base squash
+        if (dy > 0) sy *= 0.93;                                // extra squash when dragging down
+        var sx = 2.0 - sy;                                     // goo conservation: wide = short
+        pts.push("--w" + (p + 1) + "x:" + dx + "px;--w" + (p + 1) + "y:" + dy + "px;"
+          + "--r" + (p + 1) + ":" + rot + "deg;"
+          + "--sx" + (p + 1) + ":" + sx.toFixed(3) + ";--sy" + (p + 1) + ":" + sy.toFixed(3) + ";");
+      }
+      var dir = DIRS[Math.floor(Math.random() * DIRS.length)];
+      var anim = ANIMS[Math.floor(Math.random() * ANIMS.length)];
       // Static blob silhouette (random per orb) — organic shape without
       // animating border-radius, which would repaint every frame.
       var br = function () { return 35 + Math.round(Math.random() * 30); };
       html += '<span class="bg-orb" style="width:' + size + "px;height:" + size
         + 'px;left:' + x.toFixed(1) + "vw;top:" + y.toFixed(1) + "vh;"
         + "border-radius:" + br() + "% " + br() + "% " + br() + "% " + br() + "% / " + br() + "% " + br() + "% " + br() + "% " + br() + "%;"
-        + "background:radial-gradient(circle, rgba(" + c.rgb + "," + c.a + "), rgba(" + c.rgb + ",0.04) 55%, transparent 72%);"
-        + "animation-duration:" + dur + "s;animation-delay:" + delay + "s;animation-direction:" + dir + ";"
-        + "--w1x:" + w() + "px;--w1y:" + w() + "px;"
-        + "--w2x:" + w() + "px;--w2y:" + w() + "px;"
-        + "--w3x:" + w() + "px;--w3y:" + w() + "px;"
-        + "--w4x:" + w() + "px;--w4y:" + w() + "px;"
-        + "--w5x:" + w() + "px;--w5y:" + w() + "px;"
-        + "--w6x:" + w() + "px;--w6y:" + w() + "px;"
-        + "--w7x:" + w() + "px;--w7y:" + w() + "px;"
-        + "--w8x:" + w() + "px;--w8y:" + w() + "px;"
-        + '"></span>';
+        + "background:radial-gradient(circle, rgba(" + c.rgb + "," + a + "), rgba(" + c.rgb + ",0.04) 55%, transparent 72%);"
+        + (blur ? "filter:blur(" + blur + "px);" : "")
+        + "animation-name:" + anim + ";animation-duration:" + dur + "s;animation-delay:" + delay + "s;animation-direction:" + dir + ";"
+        + pts.join("") + '"></span>';
     }
     html += "</div>";
     document.body.insertAdjacentHTML("afterbegin", html);
