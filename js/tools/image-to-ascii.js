@@ -8,7 +8,8 @@ ToolBox.define("image-to-ascii", {
       + "</div>"
       + '<div id="controls" class="hidden" style="margin-top:20px;">'
       + '<div class="controls">'
-      + '<label>Style <select id="style"><option value="classic" selected>Classic</option><option value="fine">Fine</option><option value="blocky">Blocky</option></select></label>'
+      + '<label>Style <select id="style"><option value="classic" selected>Classic</option><option value="fine">Fine</option><option value="complex">Complex</option><option value="blocky">Blocky</option></select></label>'
+      + '<label>Color <select id="color"><option value="off" selected>B&W</option><option value="full">Full color</option><option value="gray">Grayscale tint</option></select></label>'
       + '<label>Width <input type="range" id="width" min="40" max="220" value="120"> <span id="width-label">120</span></label>'
       + '<label>Contrast <input type="range" id="contrast" min="0" max="200" value="100"> <span id="contrast-label">100%</span></label>'
       + '<label>Brightness <input type="range" id="brightness" min="-60" max="60" value="0"> <span id="brightness-label">0</span></label>'
@@ -19,9 +20,11 @@ ToolBox.define("image-to-ascii", {
       + '<button id="auto" class="btn ghost">✨ Auto-optimize</button>'
       + "</div>"
       + '<p id="auto-note" class="muted small" style="margin-top:6px;"></p>'
-      + '<div class="ascii-out" id="out" aria-label="ASCII art output"></div>'
-      + '<div class="controls" style="margin-top:14px;"><button id="copy" class="btn primary">📋 Copy ASCII</button></div>'
-      + "</div></div>";
+      + '<div class="ascii-out" id="out" aria-label="ASCII art output" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.05;white-space:pre;font-size:10px;word-break:break-all;"></div>'
+      + '<div class="controls" style="margin-top:14px;">'
+      + '<button id="copy" class="btn primary">📋 Copy ASCII</button>'
+      + '<button id="copy-html" class="btn ghost">📋 Copy colored (HTML)</button>'
+      + "</div></div></div>";
 
     var drop = box.querySelector("#drop");
     var fileInput = box.querySelector("#file");
@@ -30,15 +33,23 @@ ToolBox.define("image-to-ascii", {
     var widthEl = box.querySelector("#width");
     var lastImg = null;
     var lastUrl = null;
+    var lastPlain = ""; /* plain-text mirror of the current output (for copy) */
+    /* ascii-image-converter style ramps. The "complex" ramp is the classic
+       70-level lighting-density ramp — smooth gradients, no banding. */
     var RAMP = {
       classic: " .:-=+*#%@",
       fine: " .,:;irsXA253hMHGS#9B&@",
+      /* the classic 70-level lighting ramp (lightest → darkest, matching the
+         other styles below) — the same character density ascii-image-converter
+         uses for smooth gradients */
+      complex: " .'`^\",:;Il!i><~+_-?[]{}1()|\\/tfrjxunvcxzYUCQL0OZmwqpdbkaoh*#MW&8%B@$",
       blocky: " ░▒▓█"
     };
-    var STYLE_NAME = { classic: "Classic", fine: "Fine", blocky: "Blocky" };
+    var STYLE_NAME = { classic: "Classic", fine: "Fine", complex: "Complex", blocky: "Blocky" };
 
-    /* Analyze the image: aspect, resolution, and tonal statistics (mean/stddev/tones)
-       computed on a small downscaled sample with the same auto-level stretch convert() uses. */
+    /* Analyze the image: aspect, resolution, tonal statistics and colorfulness.
+       Computed on a small downscaled sample with the same auto-level stretch
+       convert() uses, so the analysis matches what you'll see. */
     function analyze(img) {
       var sw = 160;
       var aspect = img.naturalHeight / img.naturalWidth;
@@ -51,6 +62,7 @@ ToolBox.define("image-to-ascii", {
       var d = ctx.getImageData(0, 0, sw, sh).data;
       var n = sw * sh;
       var gray = new Float32Array(n);
+      var chroma = 0;
       for (var i = 0; i < n; i++) {
         var p = i * 4;
         var a = d[p + 3] / 255;
@@ -58,8 +70,9 @@ ToolBox.define("image-to-ascii", {
         var g = d[p + 1] * a + 255 * (1 - a);
         var b = d[p + 2] * a + 255 * (1 - a);
         gray[i] = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        chroma += (Math.abs(r - g) + Math.abs(g - b) + Math.abs(b - r)) / 2;
       }
-      // same auto-levels stretch as convert()
+      chroma /= n;
       var mn = 255, mx = 0;
       for (var j = 0; j < n; j++) {
         if (gray[j] < mn) mn = gray[j];
@@ -80,48 +93,44 @@ ToolBox.define("image-to-ascii", {
         counts[bucket] = (counts[bucket] || 0) + 1;
       }
       var sigma = Math.sqrt(varr / n);
-      // ignore negligible buckets (anti-aliased edges on flat art) so line art
-      // doesn't count as a continuous-tone photo
       var minShare = n * 0.0025;
       var tones = 0;
       for (var b in counts) if (counts[b] >= minShare) tones++;
-      return { aspect: aspect, longest: Math.max(img.naturalWidth, img.naturalHeight), mean: mean, sigma: sigma, tones: tones };
+      return { aspect: aspect, longest: Math.max(img.naturalWidth, img.naturalHeight), mean: mean, sigma: sigma, tones: tones, chroma: chroma };
     }
 
-    /* Pick the best settings for the loaded image and apply them.
-       Conservative on purpose: auto-levels already stretches + centers the tones,
-       so contrast/brightness stay neutral — only width and style adapt to the image. */
+    /* Pick the best settings for the loaded image and apply them. */
     function autoTune() {
       if (!lastImg) return;
       var a = analyze(lastImg);
 
-      // style: flat line art → Classic (clean edges), everything tonal → Fine (most levels)
-      var style = a.tones <= 5 ? "classic" : "fine";
+      // style: flat line art → Classic (clean edges), tonal → Fine, big detailed → Complex
+      var style = a.tones <= 5 ? "classic" : (a.longest >= 1400 ? "complex" : "fine");
       box.querySelector("#style").value = style;
 
-      // width: modest and aspect-aware (characters are ~2x taller than wide).
-      // never the 200+ wall of text — that's unreadable on any screen.
+      // color: colorful photos get full color (that's what makes it look like the photo)
+      var colorful = a.chroma >= 22;
+      box.querySelector("#color").value = colorful ? "full" : "off";
+
       var aspect = a.aspect; // h/w
       var w;
-      if (aspect <= 0.6) w = 140;         // wide landscape
+      if (aspect <= 0.6) w = 140;
       else if (aspect <= 0.9) w = 125;
-      else if (aspect <= 1.25) w = 110;   // roughly square
-      else w = 90;                        // portrait
+      else if (aspect <= 1.25) w = 110;
+      else w = 90;
       w = Math.max(40, Math.min(160, w, lastImg.naturalWidth || 160));
       widthEl.value = w;
       box.querySelector("#width-label").textContent = w;
 
-      // tonal balance stays neutral — the auto-level stretch in convert() handles it
       box.querySelector("#contrast").value = 100;
       box.querySelector("#contrast-label").textContent = "100%";
       box.querySelector("#brightness").value = 0;
       box.querySelector("#brightness-label").textContent = "0";
-
-      // dither only helps images with continuous tones — keep flat art clean
       box.querySelector("#dither").checked = a.tones >= 6;
 
       box.querySelector("#auto-note").textContent = "✨ Auto-optimized: " + STYLE_NAME[style]
         + " · " + w + " chars wide"
+        + (colorful ? " · full color" : " · B&W")
         + (a.tones >= 6 ? " · dither on" : " · dither off")
         + " — tweak any control to override.";
       convert();
@@ -142,11 +151,13 @@ ToolBox.define("image-to-ascii", {
       var data = ctx.getImageData(0, 0, w, h).data;
       var n = w * h;
       var gray = new Float32Array(n);
+      var rgb = new Uint8ClampedArray(n * 3);
       var contrast = Number(box.querySelector("#contrast").value) / 100;
       var bright = Number(box.querySelector("#brightness").value) / 100;
       var invert = box.querySelector("#invert").checked;
+      var colorMode = box.querySelector("#color").value;
 
-      // Perceptual luminance, alpha composited onto white so PNGs with transparency work
+      // Perceptual luminance + pixel color, alpha composited onto white
       for (var i = 0; i < n; i++) {
         var p = i * 4;
         var a = data[p + 3] / 255;
@@ -154,6 +165,7 @@ ToolBox.define("image-to-ascii", {
         var g = data[p + 1] * a + 255 * (1 - a);
         var b = data[p + 2] * a + 255 * (1 - a);
         gray[i] = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        rgb[i * 3] = r; rgb[i * 3 + 1] = g; rgb[i * 3 + 2] = b;
       }
 
       // Auto-levels: stretch the darkest..brightest range across the full ramp
@@ -174,18 +186,17 @@ ToolBox.define("image-to-ascii", {
 
       var dither = box.querySelector("#dither").checked;
       var err = dither ? new Float32Array(n) : null;
-      var lines = [];
+      var ci = new Uint8Array(n); // ramp index per cell (dither-aware)
       for (var y = 0; y < h; y++) {
-        var line = "";
         for (var x = 0; x < w; x++) {
           var idx = y * w + x;
           var v = Math.max(0, Math.min(255, gray[idx] + (err ? err[idx] : 0)));
-          // bright pixel → low ramp index (light char); dark pixel → high index (dark char)
-          var ci = L - 1 - Math.round((v / 255) * (L - 1));
-          if (invert) ci = L - 1 - ci;
-          if (ci < 0) ci = 0;
-          if (ci >= L) ci = L - 1;
-          line += ramp[ci];
+          // bright pixel → low ramp index (light char); dark → high index (dark char)
+          var c = L - 1 - Math.round((v / 255) * (L - 1));
+          if (invert) c = L - 1 - c;
+          if (c < 0) c = 0;
+          if (c >= L) c = L - 1;
+          ci[idx] = c;
           if (err) {
             var q = Math.round((v / 255) * (L - 1)) / (L - 1) * 255;
             var e = v - q;
@@ -197,9 +208,54 @@ ToolBox.define("image-to-ascii", {
             }
           }
         }
-        lines.push(line);
       }
-      outEl.textContent = lines.join("\n");
+
+      if (colorMode === "off") {
+        var lines = [];
+        for (var ly = 0; ly < h; ly++) {
+          var line = "";
+          for (var lx = 0; lx < w; lx++) line += ramp[ci[ly * w + lx]];
+          lines.push(line);
+        }
+        lastPlain = lines.join("\n");
+        outEl.textContent = lastPlain;
+        box.querySelector("#copy-html").style.display = "none";
+        return;
+      }
+
+      /* Colored output (ascii-image-converter style): each character is drawn
+         with the pixel's own color, so the art keeps the photo's colors.
+         Consecutive same-color chars are merged into one span for perf. */
+      var html = "";
+      lastPlain = "";
+      for (var cy = 0; cy < h; cy++) {
+        var runColor = null, run = "", runPlain = "";
+        for (var cx = 0; cx < w; cx++) {
+          var i2 = cy * w + cx;
+          var ch = ramp[ci[i2]];
+          runPlain += ch;
+          var cr = rgb[i2 * 3], cg = rgb[i2 * 3 + 1], cb = rgb[i2 * 3 + 2];
+          if (invert) { cr = 255 - cr; cg = 255 - cg; cb = 255 - cb; }
+          if (colorMode === "gray") {
+            var l = Math.round(0.2126 * cr + 0.7152 * cg + 0.0722 * cb);
+            cr = l; cg = l; cb = l;
+          }
+          var key = cr + "," + cg + "," + cb;
+          if (key !== runColor) {
+            if (run) html += '<span style="color:rgb(' + runColor + ')">' + ToolBox.esc(run) + "</span>";
+            runColor = key;
+            run = ch;
+          } else {
+            run += ch;
+          }
+        }
+        if (run) html += '<span style="color:rgb(' + runColor + ')">' + ToolBox.esc(run) + "</span>";
+        html += "\n";
+        lastPlain += runPlain + "\n";
+      }
+      lastPlain = lastPlain.replace(/\n$/, "");
+      outEl.innerHTML = html;
+      box.querySelector("#copy-html").style.display = "";
     }
 
     drop.addEventListener("click", function () { fileInput.click(); });
@@ -235,7 +291,7 @@ ToolBox.define("image-to-ascii", {
         convert();
       });
     }
-    ["style", "contrast", "brightness", "dither", "invert"].forEach(function (id) {
+    ["style", "contrast", "brightness", "dither", "invert", "color"].forEach(function (id) {
       box.querySelector("#" + id).addEventListener("input", scheduleConvert);
       box.querySelector("#" + id).addEventListener("change", convert);
     });
@@ -251,15 +307,26 @@ ToolBox.define("image-to-ascii", {
     });
     box.querySelector("#auto").addEventListener("click", autoTune);
     box.querySelector("#copy").addEventListener("click", function () {
-      var txt = outEl.textContent;
-      if (!txt) return;
+      if (!lastPlain) return;
       function done() {
         var b = box.querySelector("#copy");
         b.textContent = "✅ Copied!";
         setTimeout(function () { b.textContent = "📋 Copy ASCII"; }, 1500);
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(done, function () { done(); });
+        navigator.clipboard.writeText(lastPlain).then(done, function () { done(); });
+      } else done();
+    });
+    box.querySelector("#copy-html").addEventListener("click", function () {
+      if (!outEl.innerHTML) return;
+      function done() {
+        var b = box.querySelector("#copy-html");
+        b.textContent = "✅ Copied!";
+        setTimeout(function () { b.textContent = "📋 Copy colored (HTML)"; }, 1500);
+      }
+      var html = outEl.innerHTML;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(html).then(done, function () { done(); });
       } else done();
     });
     function load(file) {

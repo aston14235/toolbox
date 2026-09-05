@@ -196,26 +196,26 @@ body.js .reveal.in { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes orbWanderB {
   /* springy — overshoots and lingers, like a blob tasting its next spot */
-  0%   { transform: translate(0, 0) rotate(0deg) scale(1, 1); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
-  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) rotate(var(--r1, 3deg)) scale(var(--sx1, 1.06), var(--sy1, 0.95)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
-  25%  { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) rotate(var(--r2, -4deg)) scale(var(--sx2, 0.95), var(--sy2, 1.06)); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
-  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) rotate(var(--r3, 2deg)) scale(var(--sx3, 1.05), var(--sy3, 0.97)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
-  50%  { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) rotate(var(--r4, -3deg)) scale(var(--sx4, 0.97), var(--sy4, 1.07)); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
-  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) rotate(var(--r5, 4deg)) scale(var(--sx5, 1.06), var(--sy5, 0.96)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
-  75%  { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) rotate(var(--r6, -2deg)) scale(var(--sx6, 0.94), var(--sy6, 1.05)); animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1); }
-  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) rotate(var(--r7, 3deg)) scale(var(--sx7, 1.04), var(--sy7, 0.98)); animation-timing-function: cubic-bezier(0.36, 0.05, 0.66, 0.55); }
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1, 1); animation-timing-function: cubic-bezier(0.25, 1.7, 0.55, 1); }
+  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) rotate(var(--r1, 3deg)) scale(var(--sx1, 1.06), var(--sy1, 0.95)); animation-timing-function: cubic-bezier(0.3, 0.12, 0.5, 0.9); }
+  25%  { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) rotate(var(--r2, -4deg)) scale(var(--sx2, 0.95), var(--sy2, 1.06)); animation-timing-function: cubic-bezier(0.25, 1.7, 0.55, 1); }
+  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) rotate(var(--r3, 2deg)) scale(var(--sx3, 1.05), var(--sy3, 0.97)); animation-timing-function: cubic-bezier(0.3, 0.12, 0.5, 0.9); }
+  50%  { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) rotate(var(--r4, -3deg)) scale(var(--sx4, 0.97), var(--sy4, 1.07)); animation-timing-function: cubic-bezier(0.25, 1.7, 0.55, 1); }
+  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) rotate(var(--r5, 4deg)) scale(var(--sx5, 1.06), var(--sy5, 0.96)); animation-timing-function: cubic-bezier(0.3, 0.12, 0.5, 0.9); }
+  75%  { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) rotate(var(--r6, -2deg)) scale(var(--sx6, 0.94), var(--sy6, 1.05)); animation-timing-function: cubic-bezier(0.25, 1.7, 0.55, 1); }
+  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) rotate(var(--r7, 3deg)) scale(var(--sx7, 1.04), var(--sy7, 0.98)); animation-timing-function: cubic-bezier(0.3, 0.12, 0.5, 0.9); }
   100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) rotate(var(--r8, 0deg)) scale(var(--sx8, 1), var(--sy8, 1)); }
 }
 @keyframes orbWanderC {
   /* heavy-drip — slow heavy pull down, quick elastic snap up */
   0%   { transform: translate(0, 0) rotate(0deg) scale(1, 1); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
-  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) rotate(var(--r1, 3deg)) scale(var(--sx1, 1.06), var(--sy1, 0.95)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) rotate(var(--r1, 3deg)) scale(var(--sx1, 1.06), var(--sy1, 0.95)); animation-timing-function: cubic-bezier(0.12, 1.35, 0.25, 1); }
   25%  { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) rotate(var(--r2, -4deg)) scale(var(--sx2, 0.95), var(--sy2, 1.06)); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
-  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) rotate(var(--r3, 2deg)) scale(var(--sx3, 1.05), var(--sy3, 0.97)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) rotate(var(--r3, 2deg)) scale(var(--sx3, 1.05), var(--sy3, 0.97)); animation-timing-function: cubic-bezier(0.12, 1.35, 0.25, 1); }
   50%  { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) rotate(var(--r4, -3deg)) scale(var(--sx4, 0.97), var(--sy4, 1.07)); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
-  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) rotate(var(--r5, 4deg)) scale(var(--sx5, 1.06), var(--sy5, 0.96)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) rotate(var(--r5, 4deg)) scale(var(--sx5, 1.06), var(--sy5, 0.96)); animation-timing-function: cubic-bezier(0.12, 1.35, 0.25, 1); }
   75%  { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) rotate(var(--r6, -2deg)) scale(var(--sx6, 0.94), var(--sy6, 1.05)); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
-  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) rotate(var(--r7, 3deg)) scale(var(--sx7, 1.04), var(--sy7, 0.98)); animation-timing-function: cubic-bezier(0.22, 1.05, 0.36, 1); }
+  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) rotate(var(--r7, 3deg)) scale(var(--sx7, 1.04), var(--sy7, 0.98)); animation-timing-function: cubic-bezier(0.12, 1.35, 0.25, 1); }
   100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) rotate(var(--r8, 0deg)) scale(var(--sx8, 1), var(--sy8, 1)); }
 }
 

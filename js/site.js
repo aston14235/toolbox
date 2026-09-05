@@ -385,7 +385,7 @@
       + "</div>";
 
     var s = document.createElement("script");
-    s.src = b + "js/tools/" + slug + ".js?v=16";
+    s.src = b + "js/tools/" + slug + ".js?v=20";
     s.onload = function () {
       var box = page.querySelector("#tool-box");
       var mod = modules[slug];
@@ -417,30 +417,31 @@
   function spawnOrbs() {
     var BLUE = { rgb: "0, 136, 255", a: 0.16 };
     var YELLOW = { rgb: "255, 198, 0", a: 0.1 };
-    var COUNT = 36;
+    var COUNT = 50;
+    var SIZE = 100; // uniform — every blob exactly the same size
     var ANIMS = ["orbWander", "orbWanderB", "orbWanderC"];
     var DIRS = ["alternate", "alternate-reverse", "normal", "reverse"];
     var html = '<div class="bg-orbs" aria-hidden="true">';
     for (var i = 0; i < COUNT; i++) {
-      var c = Math.random() < 0.6 ? BLUE : YELLOW; // 60/40 blue/yellow, random each blob
+      var c = (i % 2 === 0) ? BLUE : YELLOW; // exact 25 blue / 25 yellow, interleaved
       var a = (c.a * (0.55 + Math.random() * 0.9)).toFixed(3); // per-blob opacity
-      var size = Math.round(50 + Math.random() * 100); // 50-150px — searchbar glow scale
+      var size = SIZE;
       var x = Math.random() * 100;
       var y = Math.random() * 100;
-      var dur = (12 + Math.random() * 30).toFixed(1); // 12-42s each
-      var delay = (-Math.random() * 40).toFixed(1);   // desync
-      var m = Math.round(30 + Math.random() * 110);   // wander radius 30-140px
-      var blur = Math.random() < 0.75 ? Math.round(6 + Math.random() * 10) : 0; // 75% get a soft melt blur
+      var dur = (8 + Math.random() * 22).toFixed(1); // 8-30s each — livelier
+      var delay = (-Math.random() * 40).toFixed(1);  // desync
+      var m = Math.round(30 + Math.random() * 110);  // wander radius 30-140px
+      var blur = Math.random() < 0.75 ? Math.round(6 + Math.random() * 8) : 0; // 75% get a soft melt blur
       // Goo points: x is symmetric, y drifts downward ~65% of the time so the
       // blob feels heavy and "drags" along the floor of the screen.
       var pts = [];
       for (var p = 0; p < 8; p++) {
         var dx = Math.round((Math.random() * 2 - 1) * m);
         var dy = Math.round((Math.random() * 1.7 - 0.35) * m); // bias: +0.35 mean down
-        var rot = Math.round((Math.random() * 2 - 1) * 7);     // -7..7deg
-        var sy = 0.9 + Math.random() * 0.22;                   // base squash
-        if (dy > 0) sy *= 0.93;                                // extra squash when dragging down
-        var sx = 2.0 - sy;                                     // goo conservation: wide = short
+        var rot = Math.round((Math.random() * 2 - 1) * 10);    // -10..10deg — squirmier
+        var sy = 0.86 + Math.random() * 0.24;                  // base squash 0.86-1.10
+        if (dy > 0) sy *= 0.9;                                 // deeper squash when dragging down
+        var sx = 2.05 - sy;                                    // goo conservation: wide = short
         pts.push("--w" + (p + 1) + "x:" + dx + "px;--w" + (p + 1) + "y:" + dy + "px;"
           + "--r" + (p + 1) + ":" + rot + "deg;"
           + "--sx" + (p + 1) + ":" + sx.toFixed(3) + ";--sy" + (p + 1) + ":" + sy.toFixed(3) + ";");
