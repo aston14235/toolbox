@@ -163,7 +163,7 @@ body.js .reveal.in { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   color: transparent;
 }
 
-/* ===== Ambient background orbs (subtle, slow) ===== */
+/* ===== Ambient background orbs (small, search-glow scale, random wander) ===== */
 .bg-orbs {
   position: fixed;
   inset: 0;
@@ -174,59 +174,29 @@ body.js .reveal.in { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 .bg-orb {
   position: absolute;
   border-radius: 50%;
-  will-change: transform;
+  will-change: transform, border-radius;
+  animation:
+    orbWander var(--dur, 18s) ease-in-out infinite var(--dir, alternate),
+    orbMorph var(--morph, 14s) ease-in-out infinite alternate;
+  animation-delay: var(--delay, -3s), var(--morph-delay, -5s);
 }
-.bg-orb-a {
-  width: 45vw;
-  height: 45vw;
-  top: -12%;
-  left: -8%;
-  background: radial-gradient(circle, rgba(0, 136, 255, 0.14), rgba(0, 136, 255, 0.05) 55%, transparent 72%);
-  animation: orbDriftA 26s ease-in-out infinite alternate;
+@keyframes orbWander {
+  0% { transform: translate(0, 0) scale(1, 1); }
+  12.5% { transform: translate(var(--w1x, 40px), var(--w1y, 30px)) scale(1.06, 0.96); }
+  25% { transform: translate(var(--w2x, -35px), var(--w2y, -25px)) scale(0.96, 1.05); }
+  37.5% { transform: translate(var(--w3x, 25px), var(--w3y, -40px)) scale(1.04, 0.98); }
+  50% { transform: translate(var(--w4x, -30px), var(--w4y, 35px)) scale(0.98, 1.06); }
+  62.5% { transform: translate(var(--w5x, 45px), var(--w5y, -15px)) scale(1.05, 0.97); }
+  75% { transform: translate(var(--w6x, -20px), var(--w6y, 40px)) scale(0.95, 1.04); }
+  87.5% { transform: translate(var(--w7x, 35px), var(--w7y, 20px)) scale(1.03, 0.98); }
+  100% { transform: translate(var(--w8x, -40px), var(--w8y, -30px)) scale(1, 1); }
 }
-.bg-orb-b {
-  width: 40vw;
-  height: 40vw;
-  top: 15%;
-  right: -12%;
-  background: radial-gradient(circle, rgba(56, 182, 255, 0.12), rgba(158, 255, 255, 0.05) 55%, transparent 72%);
-  animation: orbDriftB 32s ease-in-out infinite alternate;
-}
-.bg-orb-c {
-  width: 50vw;
-  height: 50vw;
-  bottom: -18%;
-  left: 10%;
-  background: radial-gradient(circle, rgba(0, 136, 255, 0.12), rgba(0, 82, 163, 0.05) 55%, transparent 72%);
-  animation: orbDriftC 38s ease-in-out infinite alternate;
-}
-.bg-orb-d {
-  width: 32vw;
-  height: 32vw;
-  top: 42%;
-  left: 58%;
-  background: radial-gradient(circle, rgba(158, 255, 255, 0.1), rgba(0, 136, 255, 0.04) 55%, transparent 72%);
-  animation: orbDriftB 29s ease-in-out infinite alternate-reverse;
-}
-.bg-orb-e {
-  width: 26vw;
-  height: 26vw;
-  bottom: 8%;
-  right: 20%;
-  background: radial-gradient(circle, rgba(255, 198, 0, 0.07), rgba(255, 198, 0, 0.02) 55%, transparent 72%);
-  animation: orbDriftA 34s ease-in-out infinite alternate-reverse;
-}
-@keyframes orbDriftA {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(5vw, 4vh) scale(1.1); }
-}
-@keyframes orbDriftB {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(-4vw, 6vh) scale(1.08); }
-}
-@keyframes orbDriftC {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(6vw, -5vh) scale(1.12); }
+@keyframes orbMorph {
+  0% { border-radius: 42% 58% 61% 39% / 45% 42% 58% 55%; }
+  25% { border-radius: 55% 45% 38% 62% / 60% 38% 62% 40%; }
+  50% { border-radius: 47% 53% 65% 35% / 40% 60% 40% 60%; }
+  75% { border-radius: 60% 40% 44% 56% / 52% 62% 38% 48%; }
+  100% { border-radius: 42% 58% 61% 39% / 45% 42% 58% 55%; }
 }
 
 /* Hero ambient glow */

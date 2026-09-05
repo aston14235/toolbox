@@ -357,19 +357,44 @@
     page.appendChild(s);
   }
 
+  /* ================= Ambient background orbs ================= */
+  function spawnOrbs() {
+    var BLUE = { rgb: "0, 136, 255", a: 0.16 };
+    var YELLOW = { rgb: "255, 198, 0", a: 0.1 };
+    var COUNT = 30;
+    var html = '<div class="bg-orbs" aria-hidden="true">';
+    for (var i = 0; i < COUNT; i++) {
+      var c = Math.random() < 0.6 ? BLUE : YELLOW; // 60/40 blue/yellow, random each blob
+      var size = Math.round(60 + Math.random() * 100); // 60-160px
+      var x = Math.random() * 100;
+      var y = Math.random() * 100;
+      var dur = (10 + Math.random() * 20).toFixed(1); // 10-30s each
+      var delay = (-Math.random() * 30).toFixed(1);   // desync
+      var m = Math.round(30 + Math.random() * 100);   // wander radius 30-130px
+      var w = function () { return Math.round((Math.random() * 2 - 1) * m); };
+      var dir = Math.random() < 0.5 ? "alternate" : "alternate-reverse";
+      html += '<span class="bg-orb" style="width:' + size + "px;height:" + size
+        + 'px;left:' + x.toFixed(1) + "vw;top:" + y.toFixed(1) + "vh;"
+        + "background:radial-gradient(circle, rgba(" + c.rgb + "," + c.a + "), rgba(" + c.rgb + ",0.04) 55%, transparent 72%);"
+        + "animation-duration:" + dur + "s;animation-delay:" + delay + "s;animation-direction:" + dir + ";"
+        + "--w1x:" + w() + "px;--w1y:" + w() + "px;"
+        + "--w2x:" + w() + "px;--w2y:" + w() + "px;"
+        + "--w3x:" + w() + "px;--w3y:" + w() + "px;"
+        + "--w4x:" + w() + "px;--w4y:" + w() + "px;"
+        + "--w5x:" + w() + "px;--w5y:" + w() + "px;"
+        + "--w6x:" + w() + "px;--w6y:" + w() + "px;"
+        + "--w7x:" + w() + "px;--w7y:" + w() + "px;"
+        + "--w8x:" + w() + "px;--w8y:" + w() + "px;"
+        + '"></span>';
+    }
+    html += "</div>";
+    document.body.insertAdjacentHTML("afterbegin", html);
+  }
+
   /* ================= Boot ================= */
   function boot() {
     document.body.classList.add("js");
-    if (!document.querySelector(".bg-orbs")) {
-      document.body.insertAdjacentHTML("afterbegin",
-        '<div class="bg-orbs" aria-hidden="true">'
-        + '<span class="bg-orb bg-orb-a"></span>'
-        + '<span class="bg-orb bg-orb-b"></span>'
-        + '<span class="bg-orb bg-orb-c"></span>'
-        + '<span class="bg-orb bg-orb-d"></span>'
-        + '<span class="bg-orb bg-orb-e"></span>'
-        + "</div>");
-    }
+    if (!document.querySelector(".bg-orbs")) spawnOrbs();
     var header = document.getElementById("site-header");
     var footer = document.getElementById("site-footer");
     var page = document.getElementById("page");
