@@ -35,7 +35,7 @@ ToolBox.define("spiral-art", {
         } else if (type === "fermat") {
           r = maxR * Math.sqrt(th / (Math.PI * 2 * rot));
         } else {
-          r = maxR * th;
+          r = maxR * t;
         }
         out.push({ x: CX + r * Math.cos(th), y: CY + r * Math.sin(th) });
       }
@@ -73,8 +73,11 @@ ToolBox.define("spiral-art", {
       b.classList.remove("primary");
       var pts = points();
       var n = 0;
-      var lastT = 0;
+      var lastT = 0, started = false;
       function step(t) {
+        /* first frame only seeds the clock — rAF timestamps are ms since page load,
+           so subtracting a zero lastT would jump the whole spiral in one frame */
+        if (!started) { started = true; lastT = t; anim = requestAnimationFrame(step); return; }
         n += (t - lastT) * 0.5;
         lastT = t;
         drawUpTo(pts, n);
