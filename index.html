@@ -48,6 +48,12 @@
   </div>
   <script>
     /* fail-safe dismiss — defined first so skip/error always work, even if the main script fails */
+    window.__introMark = function () {
+      try { sessionStorage.setItem('tb-intro-done', '1'); } catch (e) {}
+    };
+    window.__introSeen = function () {
+      try { return !!sessionStorage.getItem('tb-intro-done'); } catch (e) { return false; }
+    };
     window.__introDismiss = function () {
       var o = document.getElementById('intro-overlay');
       if (!o || o.dataset.done) return;
@@ -57,13 +63,14 @@
       /* cut the audio: pause the video immediately instead of letting it play behind the fade */
       var v = document.getElementById('intro-video');
       if (v) v.pause();
+      window.__introMark();
       setTimeout(function () { o.classList.add('gone'); }, 900);
     };
   </script>
   <header id="site-header" class="sticky top-0 z-50 border-b border-day-200/70 bg-day-50/80 backdrop-blur-md transition-colors duration-300 dark:border-night-600/60 dark:bg-night-950/80"></header>
   <main id="page" data-route="home"></main>
   <footer id="site-footer"></footer>
-  <script src="js/site.js?v=26"></script>
+  <script src="js/site.js?v=27"></script>
   <script>
     /* ===== intro playback ===== */
     (function () {
@@ -78,6 +85,7 @@
         /* cut the audio: pause the video immediately instead of letting it play behind the fade */
         var v = document.getElementById('intro-video');
         if (v) v.pause();
+        window.__introMark();
         setTimeout(function () { ov.classList.add('gone'); }, 900);
       }
       /* replayable from the footer button (defined before any early exit) */
@@ -100,6 +108,15 @@
           if (p2 && p2.catch) p2.catch(function () {});
         });
       };
+
+      /* seen once this session? skip straight past the intro (pressing Home shouldn't replay it) */
+      if (window.__introSeen && window.__introSeen()) {
+        ov.classList.add('gone');
+        document.body.classList.remove('intro-lock');
+        var sv = document.getElementById('intro-video');
+        if (sv) { sv.pause(); sv.removeAttribute('src'); sv.load(); }
+        return;
+      }
 
       if (reduce) {
         ov.classList.add('gone');

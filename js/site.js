@@ -464,8 +464,63 @@
   }
 
   /* ================= Boot ================= */
+  /* ================= Button sounds (Assets -> assets/button-*.mp3) ================= */
+  function initSounds() {
+    var hoverA = null, clickA = null, lastHoverT = 0, lastHoverEl = null;
+    // Tool pages live one level deep, so assets need a ../ prefix
+    var pageEl = document.getElementById("page");
+    var base = (pageEl && pageEl.dataset.route === "tool" ? "../" : "") + "assets/";
+    function ensure() {
+      if (clickA) return;
+      try {
+        hoverA = new Audio(base + "button-hover.mp3");
+        clickA = new Audio(base + "button-click.mp3");
+        hoverA.preload = "auto"; hoverA.volume = 0.45;
+        clickA.preload = "auto"; clickA.volume = 0.8;
+      } catch (e) { hoverA = null; clickA = null; }
+    }
+    function isInteractive(el) {
+      if (!el || !el.tagName) return false;
+      var tag = el.tagName;
+      if (tag === "BUTTON" || tag === "A" || tag === "SELECT") return true;
+      if (tag === "INPUT") {
+        var t = (el.type || "").toLowerCase();
+        return t === "button" || t === "submit" || t === "checkbox" || t === "radio";
+      }
+      if (el.getAttribute && (el.getAttribute("role") === "button" || el.hasAttribute("onclick"))) return true;
+      try { return getComputedStyle(el).cursor === "pointer"; } catch (e) { return false; }
+    }
+    function play(a) {
+      if (!a) return;
+      try {
+        a.currentTime = 0;
+        var p = a.play();
+        if (p && p.catch) p.catch(function () {});
+      } catch (e) {}
+    }
+    document.addEventListener("pointerover", function (e) {
+      if (e.pointerType === "touch" || !e.target || !e.target.closest) return;
+      var hit = e.target.closest("button,a,[role=button],select,input,[onclick]") || e.target;
+      if (!isInteractive(hit) || hit === lastHoverEl) return;
+      lastHoverEl = hit;
+      var now = Date.now();
+      if (now - lastHoverT < 110) return;
+      lastHoverT = now;
+      ensure();
+      play(hoverA);
+    }, true);
+    document.addEventListener("click", function (e) {
+      if (!e.target || !e.target.closest) return;
+      var hit = e.target.closest("button,a,[role=button],select,input,[onclick]");
+      if (!hit || !isInteractive(hit)) return;
+      ensure();
+      play(clickA);
+    }, true);
+  }
+
   function boot() {
     document.body.classList.add("js");
+    initSounds();
     if (!document.querySelector(".bg-orbs")) spawnOrbs();
     var header = document.getElementById("site-header");
     var footer = document.getElementById("site-footer");
