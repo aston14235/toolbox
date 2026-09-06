@@ -286,6 +286,10 @@
       + '<span class="pointer-events-none absolute left-5 top-1/2 z-20 -translate-y-1/2 text-lg opacity-70">🔍</span>'
       + '<input type="search" id="search" placeholder="Search tools… (e.g. compress, json, pomodoro)" autocomplete="off" class="gooey-input w-full rounded-full border border-day-200/80 bg-white/80 py-3.5 pl-12 pr-5 text-base text-day-900 shadow-sm outline-none backdrop-blur-sm transition-all duration-300 placeholder:text-day-500/70 hover:border-cobalt-400/60 focus:border-cobalt-400 focus:ring-4 focus:ring-cobalt-500/20 dark:border-night-600/80 dark:bg-night-900/70 dark:text-night-200 dark:placeholder:text-night-500 dark:hover:border-cobalt-400/50">'
       + "</div>"
+      + '<div class="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">'
+      + '<span class="cobalt-grad animate-grad-shift bg-[length:200%] text-lg font-extrabold tracking-tight sm:text-xl">' + TOOLS.length + " tools &middot; " + CATS.length + " categories</span>"
+      + '<span class="text-sm font-medium text-day-500 dark:text-night-400">100% free &amp; private — nothing leaves your device</span>'
+      + "</div>"
       + "</div>"
       + "</section>"
       + '<section class="mx-auto w-[min(1100px,92%)] px-0 py-7" id="cats-section">'
