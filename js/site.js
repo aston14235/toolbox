@@ -475,8 +475,8 @@
       try {
         hoverA = new Audio(base + "button-hover.mp3");
         clickA = new Audio(base + "button-click.mp3");
-        hoverA.preload = "auto"; hoverA.volume = 0.45;
-        clickA.preload = "auto"; clickA.volume = 0.8;
+        hoverA.preload = "auto"; hoverA.volume = 0.9;
+        clickA.preload = "auto"; clickA.volume = 1.0;
       } catch (e) { hoverA = null; clickA = null; }
     }
     function isInteractive(el) {
