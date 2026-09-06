@@ -28,13 +28,6 @@
       font-weight: 700; letter-spacing: .06em; opacity: .85; pointer-events: none;
       text-shadow: 0 1px 8px rgba(0,0,0,.6);
     }
-    .intro-actions { position: absolute; right: 18px; bottom: 16px; display: flex; gap: 8px; }
-    #intro-skip {
-      background: rgba(13,18,28,.55); border: 1px solid rgba(139,92,246,.45); color: #e8eef7;
-      font-size: .74rem; font-weight: 600; padding: 8px 16px; border-radius: 999px;
-      cursor: pointer; backdrop-filter: blur(6px); transition: all .25s ease;
-    }
-    #intro-skip:hover { background: rgba(139,92,246,.35); border-color: #8b5cf6; }
   </style>
 </head>
 <body>
@@ -42,9 +35,6 @@
     <video id="intro-video" src="assets/intro.mp4" autoplay playsinline preload="auto" onerror="window.__introDismiss&&window.__introDismiss()"></video>
     <div class="intro-vignette"></div>
     <span class="intro-brand">🛠️ ToolBox</span>
-    <div class="intro-actions">
-      <button id="intro-skip" type="button" onclick="window.__introDismiss&&window.__introDismiss()">Skip intro ⏭</button>
-    </div>
   </div>
   <script>
     /* fail-safe dismiss — defined first so skip/error always work, even if the main script fails */
@@ -153,7 +143,6 @@
       /* safety nets: never leave the site stuck behind a dead video */
       setTimeout(function () { if (!started && v.currentTime <= 0 && v.readyState < 3) finish(); }, 3500);
       setTimeout(function () { if (!ov.dataset.done) finish(); }, 15000); /* hard cap, video is 10s */
-      document.getElementById('intro-skip').addEventListener('click', finish);
     })();
   </script>
 </body>
