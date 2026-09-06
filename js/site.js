@@ -495,7 +495,16 @@
       try {
         a.currentTime = 0;
         var p = a.play();
-        if (p && p.catch) p.catch(function () {});
+        if (p && p.catch) p.catch(function () {
+          /* not loaded yet (very first press) — play the moment it can */
+          var onReady = function () {
+            a.currentTime = 0;
+            var p2 = a.play();
+            if (p2 && p2.catch) p2.catch(function () {});
+            a.removeEventListener("canplay", onReady);
+          };
+          a.addEventListener("canplay", onReady);
+        });
       } catch (e) {}
     }
     document.addEventListener("pointerover", function (e) {
@@ -509,10 +518,24 @@
       ensure();
       play(hoverA);
     }, true);
+    /* click sound on pointerdown: presses that navigate (tool cards, nav links)
+       unload the page on click, which would kill a click-triggered sound */
+    var lastClickPlay = 0;
+    document.addEventListener("pointerdown", function (e) {
+      if (!e.target || !e.target.closest) return;
+      if (e.button !== undefined && e.button !== 0) return;
+      var hit = e.target.closest("button,a,[role=button],select,input,[onclick]");
+      if (!hit || !isInteractive(hit)) return;
+      lastClickPlay = Date.now();
+      if (hoverA) { try { hoverA.pause(); } catch (err) {} }
+      ensure();
+      play(clickA);
+    }, true);
     document.addEventListener("click", function (e) {
       if (!e.target || !e.target.closest) return;
       var hit = e.target.closest("button,a,[role=button],select,input,[onclick]");
       if (!hit || !isInteractive(hit)) return;
+      if (Date.now() - lastClickPlay < 600) return; /* pointerdown already played it */
       ensure();
       play(clickA);
     }, true);
